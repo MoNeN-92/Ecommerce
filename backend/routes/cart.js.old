@@ -1,0 +1,29 @@
+// backend/routes/cart.js
+const express = require('express');
+const router = express.Router();
+const cartController = require('../controllers/cartController');
+const { protect } = require('../middleware/auth');
+
+// All cart routes require authentication
+router.use(protect);
+
+// Get user's cart
+router.get('/', cartController.getCart);
+
+// Add item to cart - both routes for compatibility
+router.post('/', cartController.addToCart);  // For frontend compatibility
+router.post('/add', cartController.addToCart);  // Alternative route
+
+// Update cart item quantity
+router.put('/update/:productId', cartController.updateCartItem);
+
+// Remove item from cart
+router.delete('/remove/:productId', cartController.removeFromCart);
+
+// Clear entire cart
+router.delete('/clear', cartController.clearCart);
+
+// Get cart count
+router.get('/count', cartController.getCartCount);
+
+module.exports = router;

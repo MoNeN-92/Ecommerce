@@ -1,0 +1,143 @@
+// backend/server.js
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Load env variables FIRST
+dotenv.config();
+
+// DEBUG - Check if env loads
+console.log('\n=== Environment Check ===');
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '✅ SET' : '❌ NOT SET');
+console.log('========================\n');
+
+// Import sequelize and all models from index.js
+const { 
+  sequelize, 
+  User, 
+  Product, 
+  Category, 
+  Cart, 
+  Order, 
+  OrderItem,
+  Review
+} = require('./models');
+
+console.log('✅ All models loaded from index.js');
+
+// Initialize Express
+const app = express();
+
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://192.168.81.1:3000', '*'],
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static files serving - uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.path}`);
+  next();
+});
+
+// Test route
+app.get('/', (req, res) => {
+  res.json({ message: 'E-commerce API is running!' });
+});
+
+// Import and use routes
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orders');
+const adminRoutes = require('./routes/admin');
+const categoriesRoutes = require('./routes/categories');
+const dashboardRoutes = require('./routes/dashboard');
+const uploadRoutes = require('./routes/upload');
+const userRoutes = require('./routes/user');
+const cartRoutes = require('./routes/cart');
+const checkoutRoutes = require('./routes/checkout');
+
+// Routes registration
+app.use('/api/checkout', checkoutRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/categories', require('./routes/categories'));
+
+// Routes-ების შემდეგ
+console.log('Registered routes:');
+app._router.stack.forEach(r => {
+  if (r.route && r.route.path) {
+    console.log(r.route.path);
+  }
+});
+
+// 404 handler - ყველა route-ის შემდეგ!
+app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
+// Error handling middleware - ყველაზე ბოლოში
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Database connection and server start
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  try {
+    console.log('Connecting to database...');
+    await sequelize.authenticate();
+    console.log('✅ Database connected successfully!');
+
+    console.log('Syncing database models...');
+    await sequelize.sync({ alter: false });
+    console.log('✅ Database models synced!');
+
+    app.listen(PORT,'0.0.0.0', () => {
+      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📍 API URL: http://localhost:${PORT}`);
+      console.log('\n📊 Available API Endpoints:');
+      console.log(`   - Cart: http://localhost:${PORT}/api/cart`);
+      console.log(`   - User: http://localhost:${PORT}/api/user`);
+      console.log(`   - Products: http://localhost:${PORT}/api/products`);
+      console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
+      console.log(`   - Dashboard Stats: http://localhost:${PORT}/api/dashboard/statistics`);
+      console.log(`   - Admin Orders: http://localhost:${PORT}/api/orders/admin/all`);
+      console.log(`   - Upload Images: http://localhost:${PORT}/api/upload`);
+      console.log(`   - Static Files: http://localhost:${PORT}/uploads/`);
+      
+    });
+  } catch (error) {
+    console.error('❌ Unable to start server:', error.message);
+    console.error('Full error:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
