@@ -28,7 +28,7 @@ Thumbs.db
 # VS Code
 .vscode/
 
-# Optional cache folders
+# Cache folders
 .cache/
 .next/
 out/
