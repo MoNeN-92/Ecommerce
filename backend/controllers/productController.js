@@ -1,55 +1,88 @@
 // backend/controllers/productController.js
-const { Product, Category } = require('../models'); // ✅ სწორი import
+const { Product, Category } = require('../models');
 const { Op } = require('sequelize');
 
 const getProducts = async (req, res) => {
   try {
-    // Debug: Check what attributes are available in Product model
-    console.log('Available product attributes:', Object.keys(Product.rawAttributes));
+    console.log('📦 Getting products with params:', req.query);
     
-    const { limit = 12, search } = req.query;
+    const { 
+      limit = 12, 
+      search,
+      category,  // კატეგორია შეიძლება იყოს ID ან სახელი
+      minPrice,
+      maxPrice,
+      sortBy = 'created_at',
+      sortOrder = 'DESC'
+    } = req.query;
     
-    // Build where clause for search
-    const whereClause = search 
-      ? {
-          [Op.or]: [
-            { name: { [Op.iLike]: `%${search}%` } },
-            { description: { [Op.iLike]: `%${search}%` } }
-          ]
+    // Build where clause
+    let whereClause = {};
+    
+    // Search filter
+    if (search) {
+      whereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    // Price filter
+    if (minPrice || maxPrice) {
+      whereClause.price = {};
+      if (minPrice) whereClause.price[Op.gte] = parseFloat(minPrice);
+      if (maxPrice) whereClause.price[Op.lte] = parseFloat(maxPrice);
+    }
+
+    // ⚠️ კატეგორიის ფილტრაცია - აქ იყო პრობლემა!
+    if (category && category !== 'all') {
+      // თუ რიცხვია, ეს არის ID
+      if (!isNaN(category)) {
+        whereClause.category_id = parseInt(category);
+        console.log('🔍 Filtering by category ID:', category);
+      } else {
+        // თუ სტრინგია, ეს არის კატეგორიის სახელი
+        // პირველ რიგში ვიპოვოთ კატეგორია სახელით
+        const categoryRecord = await Category.findOne({
+          where: { 
+            name: { [Op.iLike]: category } // Case-insensitive search
+          }
+        });
+        
+        if (categoryRecord) {
+          whereClause.category_id = categoryRecord.id;
+          console.log('🔍 Found category by name:', category, 'ID:', categoryRecord.id);
+        } else {
+          // თუ კატეგორია ვერ ვიპოვეთ, დავაბრუნოთ ცარიელი მასივი
+          console.log(`❌ Category not found: ${category}`);
+          return res.json({
+            success: true,
+            data: [],
+            count: 0,
+            message: `კატეგორია "${category}" ვერ მოიძებნა`
+          });
         }
-      : {};
+      }
+    }
+
+    console.log('📋 Where clause:', JSON.stringify(whereClause, null, 2));
 
     const products = await Product.findAll({
       where: whereClause,
       limit: parseInt(limit),
-      order: [['created_at', 'DESC']],
+      order: [[sortBy, sortOrder]],
       attributes: ['id', 'name', 'price', 'stock', 'description', 'image_url', 'category_id', 'slug', 'is_featured', 'created_at'],
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი 'Category'-დან 'category'-ზე
+          as: 'category',
           attributes: ['id', 'name', 'description'],
           required: false
         }
       ]
     });
 
-    // Enhanced debug logging
-    console.log(`Found ${products.length} products`);
-    if (products.length > 0) {
-      const firstProduct = products[0];
-      console.log('Raw product data:', firstProduct.dataValues);
-      console.log('Sample product parsed:', {
-        id: firstProduct.id,
-        name: firstProduct.name,
-        price: firstProduct.price,
-        stock: firstProduct.stock,
-        stockType: typeof firstProduct.stock,
-        hasStock: firstProduct.hasOwnProperty('stock'),
-        allKeys: Object.keys(firstProduct.dataValues),
-        category: firstProduct.category?.name || 'No category' // ✅ შეცვლილი
-      });
-    }
+    console.log(`✅ Found ${products.length} products`);
 
     res.json({
       success: true,
@@ -57,7 +90,7 @@ const getProducts = async (req, res) => {
       count: products.length
     });
   } catch (error) {
-    console.error('Get products error:', error);
+    console.error('❌ Get products error:', error);
     res.status(500).json({ 
       success: false, 
       message: error.message,
@@ -73,7 +106,7 @@ const getProduct = async (req, res) => {
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი
+          as: 'category',
           attributes: ['id', 'name', 'description']
         }
       ]
@@ -90,8 +123,7 @@ const getProduct = async (req, res) => {
       id: product.id,
       name: product.name,
       stock: product.stock,
-      stockType: typeof product.stock,
-      rawData: product.dataValues
+      category: product.category?.name
     });
 
     res.json({ 
@@ -157,17 +189,13 @@ const createProduct = async (req, res) => {
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი
+          as: 'category',
           attributes: ['id', 'name']
         }
       ]
     });
 
-    console.log('Created product result:', {
-      id: createdProduct.id,
-      stock: createdProduct.stock,
-      rawData: createdProduct.dataValues
-    });
+    console.log('Created product:', createdProduct.name);
 
     res.status(201).json({ 
       success: true, 
@@ -229,7 +257,7 @@ const updateProduct = async (req, res) => {
     if (updateData.stock !== undefined) updateData.stock = parseInt(updateData.stock);
     if (updateData.category_id) updateData.category_id = parseInt(updateData.category_id);
 
-    console.log('Updating product:', req.params.id, 'with data:', updateData);
+    console.log('Updating product:', req.params.id);
 
     await product.update(updateData);
     
@@ -239,16 +267,10 @@ const updateProduct = async (req, res) => {
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი
+          as: 'category',
           attributes: ['id', 'name']
         }
       ]
-    });
-
-    console.log('Updated product result:', {
-      id: updatedProduct.id,
-      stock: updatedProduct.stock,
-      rawData: updatedProduct.dataValues
     });
 
     res.json({ 
@@ -323,7 +345,7 @@ const searchProducts = async (req, res) => {
         [Op.or]: [
           { 
             name: { 
-              [Op.iLike]: `%${q}%` // PostgreSQL case-insensitive search
+              [Op.iLike]: `%${q}%`
             } 
           },
           { 
@@ -347,7 +369,7 @@ const searchProducts = async (req, res) => {
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი
+          as: 'category',
           attributes: ['id', 'name'],
           required: false
         }
@@ -412,14 +434,14 @@ const getSearchSuggestions = async (req, res) => {
       include: [
         {
           model: Category,
-          as: 'category', // ✅ შეცვლილი
+          as: 'category',
           attributes: ['name']
         }
       ],
       attributes: ['id', 'name', 'price', 'image_url', 'stock'],
-      limit: 5, // Top 5 suggestions
+      limit: 5,
       order: [
-        ['name', 'ASC'] // მარტივი order - SQL literal-ის გარეშე
+        ['name', 'ASC']
       ]
     });
 
@@ -430,7 +452,7 @@ const getSearchSuggestions = async (req, res) => {
       price: product.price,
       image: product.image_url,
       stock: product.stock,
-      category: product.category?.name || null // ✅ შეცვლილი
+      category: product.category?.name || null
     }));
 
     console.log(`✅ Found ${formattedSuggestions.length} suggestions`);
