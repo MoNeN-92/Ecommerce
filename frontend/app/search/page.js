@@ -1,12 +1,12 @@
-// frontend/app/search/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/products/ProductCard';
 import { Search, Loader2 } from 'lucide-react';
 
-export default function SearchPage() {
+// 🔥 SearchContent კომპონენტი - სადაც useSearchParams გამოიყენება
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q');
   
@@ -52,11 +52,11 @@ export default function SearchPage() {
           {query && (
             <p className="text-gray-600">
               {loading ? (
-                <>Searching for "<span className="font-medium">{query}</span>"...</>
+                <>Searching for &quot;<span className="font-medium">{query}</span>&quot;...</>
               ) : (
                 <>
-                  Found {products.length} {products.length === 1 ? 'result' : 'results'} for "
-                  <span className="font-medium">{query}</span>"
+                  Found {products.length} {products.length === 1 ? 'result' : 'results'} for &quot;
+                  <span className="font-medium">{query}</span>&quot;
                 </>
               )}
             </p>
@@ -107,5 +107,28 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// 🔥 Main SearchPage კომპონენტი Suspense wrapper-ით
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Search Results
+            </h1>
+          </div>
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mb-4" />
+            <p className="text-gray-600">Loading search...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
