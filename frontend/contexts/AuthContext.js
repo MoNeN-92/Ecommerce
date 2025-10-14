@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }) => {
       if (typeof window !== 'undefined') {
         try {
           // ჯერ შეამოწმე არსებობს თუ არა useCartStore
-          const cartStore = require('../store/cartStore');
+          const cartStore = require('../store/useCartStore');
           if (cartStore && cartStore.default) {
             const { resetCart } = cartStore.default.getState();
             if (resetCart) {
