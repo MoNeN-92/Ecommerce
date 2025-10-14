@@ -33,6 +33,19 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  images: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+    get() {
+      const value = this.getDataValue('images');
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        const singleImage = this.getDataValue('image_url');
+        return singleImage ? [singleImage] : [];
+      }
+      return value;
+    }
+  },
   category_id: {
     type: DataTypes.INTEGER,
     allowNull: false,

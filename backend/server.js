@@ -37,12 +37,11 @@ app.use(cors({
   origin: ['http://localhost:3000', 'http://192.168.81.1:3000', '*'],
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files serving - uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Request logging middleware for debugging
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path}`);

@@ -1,27 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth'); // Auth middleware import
+const { protect } = require('../middleware/auth'); 
+const { single, multiple } = require('../middleware/upload');
 
-// აქ ჩავსვათ searchProducts-იც და getSearchSuggestions
 const { 
   getProducts, 
   getProduct,
+  getFeaturedProducts,
   createProduct,
   updateProduct,
   deleteProduct,
   searchProducts,
-  getSearchSuggestions  // ✅ დამატებულია
+  getSearchSuggestions
 } = require('../controllers/productController');
 
-// Public routes
-router.get('/search-suggestions', getSearchSuggestions); // ✅ ახალი route
-router.get('/search', searchProducts); 
+// Static GET routes first
+router.get('/featured', getFeaturedProducts);
+router.get('/search-suggestions', getSearchSuggestions);
+router.get('/search', searchProducts);
 router.get('/', getProducts);
+
+// Dynamic GET route last
 router.get('/:id', getProduct);
 
-// Protected routes (require authentication)
-router.post('/', protect, createProduct);
-router.put('/:id', protect, updateProduct);
+// Protected POST/PUT routes using multiple wrapper
+router.post('/', protect, multiple('images', 3), createProduct);
+router.put('/:id', protect, multiple('images', 3), updateProduct);
 router.delete('/:id', protect, deleteProduct);
 
 module.exports = router;

@@ -2,6 +2,13 @@
 const { Product, Category } = require('../models');
 const { Op } = require('sequelize');
 
+// 🔥 Helper function to process uploaded images
+function processUploadedImages(files) {
+  if (!files || files.length === 0) return [];
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+  return files.map(file => `${BASE_URL}/uploads/products/${file.filename}`);
+}
+
 const getProducts = async (req, res) => {
   try {
     console.log('📦 Getting products with params:', req.query);
@@ -9,12 +16,16 @@ const getProducts = async (req, res) => {
     const { 
       limit = 12, 
       search,
-      category,  // კატეგორია შეიძლება იყოს ID ან სახელი
+      category,
       minPrice,
       maxPrice,
       sortBy = 'created_at',
-      sortOrder = 'DESC'
+      sortOrder = 'DESC',
+      page = 1
     } = req.query;
+    
+    // Calculate offset for pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
     
     // Build where clause
     let whereClause = {};
@@ -34,18 +45,15 @@ const getProducts = async (req, res) => {
       if (maxPrice) whereClause.price[Op.lte] = parseFloat(maxPrice);
     }
 
-    // ⚠️ კატეგორიის ფილტრაცია - აქ იყო პრობლემა!
+    // Category filter
     if (category && category !== 'all') {
-      // თუ რიცხვია, ეს არის ID
       if (!isNaN(category)) {
         whereClause.category_id = parseInt(category);
         console.log('🔍 Filtering by category ID:', category);
       } else {
-        // თუ სტრინგია, ეს არის კატეგორიის სახელი
-        // პირველ რიგში ვიპოვოთ კატეგორია სახელით
         const categoryRecord = await Category.findOne({
           where: { 
-            name: { [Op.iLike]: category } // Case-insensitive search
+            name: { [Op.iLike]: category }
           }
         });
         
@@ -53,7 +61,6 @@ const getProducts = async (req, res) => {
           whereClause.category_id = categoryRecord.id;
           console.log('🔍 Found category by name:', category, 'ID:', categoryRecord.id);
         } else {
-          // თუ კატეგორია ვერ ვიპოვეთ, დავაბრუნოთ ცარიელი მასივი
           console.log(`❌ Category not found: ${category}`);
           return res.json({
             success: true,
@@ -67,11 +74,25 @@ const getProducts = async (req, res) => {
 
     console.log('📋 Where clause:', JSON.stringify(whereClause, null, 2));
 
-    const products = await Product.findAll({
+    // Get products with count for pagination
+    const { count, rows: products } = await Product.findAndCountAll({
       where: whereClause,
       limit: parseInt(limit),
+      offset: offset,
       order: [[sortBy, sortOrder]],
-      attributes: ['id', 'name', 'price', 'stock', 'description', 'image_url', 'category_id', 'slug', 'is_featured', 'created_at'],
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured', 
+        'created_at'
+      ],
       include: [
         {
           model: Category,
@@ -79,15 +100,35 @@ const getProducts = async (req, res) => {
           attributes: ['id', 'name', 'description'],
           required: false
         }
-      ]
+      ],
+      distinct: true
     });
 
-    console.log(`✅ Found ${products.length} products`);
+    // Debug log to check data structure
+    if (products.length > 0) {
+      console.log('✅ Sample product with category:', {
+        id: products[0].id,
+        name: products[0].name,
+        category_id: products[0].category_id,
+        images: products[0].images,
+        category: products[0].category ? {
+          id: products[0].category.id,
+          name: products[0].category.name
+        } : null
+      });
+    }
+
+    console.log(`✅ Found ${products.length} products (Total: ${count})`);
 
     res.json({
       success: true,
       data: products,
-      count: products.length
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(count / parseInt(limit))
+      }
     });
   } catch (error) {
     console.error('❌ Get products error:', error);
@@ -99,10 +140,64 @@ const getProducts = async (req, res) => {
   }
 };
 
+// Get all products without pagination (for admin)
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured', 
+        'created_at'
+      ],
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    console.log(`✅ Found ${products.length} products for admin`);
+    
+    res.json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    console.error('❌ Get all products error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message
+    });
+  }
+};
+
 const getProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id, {
-      attributes: ['id', 'name', 'price', 'stock', 'description', 'image_url', 'category_id', 'slug', 'is_featured'],
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured'
+      ],
       include: [
         {
           model: Category,
@@ -123,6 +218,7 @@ const getProduct = async (req, res) => {
       id: product.id,
       name: product.name,
       stock: product.stock,
+      images: product.images,
       category: product.category?.name
     });
 
@@ -139,10 +235,124 @@ const getProduct = async (req, res) => {
   }
 };
 
+// 🔥 Featured Products - 5 დღეში ერთხელ იცვლება
+const getFeaturedProducts = async (req, res) => {
+  try {
+    console.log('🌟 Getting featured products...');
+
+    const allProducts = await Product.findAll({
+      where: {
+        stock: { [Op.gt]: 0 }
+      },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+          required: false
+        }
+      ],
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured', 
+        'created_at'
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    if (allProducts.length === 0) {
+      console.log('⚠️ No products found in database');
+      return res.json({
+        success: true,
+        data: [],
+        meta: {
+          message: 'პროდუქტები არ არის ბაზაში',
+          totalProducts: 0
+        }
+      });
+    }
+
+    console.log(`📊 Total products in database: ${allProducts.length}`);
+
+    const now = new Date();
+    const startDate = new Date('2025-01-01');
+    const daysSinceStart = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    const cycleNumber = Math.floor(daysSinceStart / 5);
+    const daysUntilChange = 5 - (daysSinceStart % 5);
+    
+    console.log('📅 Featured Products Cycle Info:');
+    console.log(`   - Days since start: ${daysSinceStart}`);
+    console.log(`   - Current cycle: ${cycleNumber}`);
+    console.log(`   - Days until change: ${daysUntilChange}`);
+    
+    const shuffled = shuffleWithSeed(allProducts, cycleNumber);
+    
+    const featuredCount = Math.min(3, shuffled.length);
+    const featured = shuffled.slice(0, featuredCount);
+    
+    console.log(`✨ Selected ${featuredCount} featured products:`, 
+      featured.map(p => `${p.id}: ${p.name}`).join(', ')
+    );
+    
+    const featuredWithMeta = featured.map((product, index) => ({
+      ...product.toJSON(),
+      isFeatured: true,
+      featuredPosition: index + 1,
+      cycleEndsIn: daysUntilChange
+    }));
+
+    res.json({
+      success: true,
+      data: featuredWithMeta,
+      meta: {
+        cycleNumber,
+        daysUntilChange,
+        totalProducts: allProducts.length,
+        featuredCount,
+        nextChangeDate: new Date(now.getTime() + daysUntilChange * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching featured products:', error);
+    res.status(500).json({
+      success: false,
+      message: 'შეცდომა featured პროდუქტების ჩატვირთვისას',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// 🎲 Deterministic Shuffle Function
+function shuffleWithSeed(array, seed) {
+  const shuffled = [...array];
+  let currentSeed = seed;
+  
+  const seededRandom = () => {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    return currentSeed / 233280;
+  };
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled;
+}
+
+// 🔥 CREATE PRODUCT - Multiple Images Support
 const createProduct = async (req, res) => {
   try {
-    // Validate required fields
-    const { name, price, stock, category_id } = req.body;
+    const { name, price, stock, category_id, description, is_featured } = req.body;
     
     if (!name || !price || stock === undefined || !category_id) {
       return res.status(400).json({
@@ -151,7 +361,6 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // Verify category exists
     const category = await Category.findByPk(category_id);
     if (!category) {
       return res.status(400).json({
@@ -160,7 +369,6 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // Auto-generate slug if not provided
     let slug = req.body.slug;
     if (!slug && name) {
       slug = name.toLowerCase()
@@ -171,21 +379,70 @@ const createProduct = async (req, res) => {
         .replace(/^-+|-+$/g, '');
     }
 
+    // 🔥 Handle multiple images
+    let images = [];
+    
+    // Option 1: Uploaded files
+    if (req.files && req.files.length > 0) {
+      images = processUploadedImages(req.files);
+      console.log('📸 Uploaded images:', images);
+    }
+    // Option 2: Image URLs from body
+    else if (req.body.images) {
+      try {
+        images = typeof req.body.images === 'string' 
+          ? JSON.parse(req.body.images)
+          : req.body.images;
+        if (!Array.isArray(images)) {
+          images = [images];
+        }
+        console.log('🔗 Image URLs from body:', images);
+      } catch (e) {
+        console.error('Error parsing images:', e);
+        images = [];
+      }
+    }
+    // Option 3: Single image_url (backwards compatibility)
+    else if (req.body.image_url) {
+      images = [req.body.image_url];
+      console.log('🔗 Single image URL (legacy):', images);
+    }
+
+    // Limit to 3 images max
+    images = images.slice(0, 3);
+
     const productData = {
-      ...req.body,
+      name: name.trim(),
       slug,
+      description: description?.trim() || null,
       price: parseFloat(price),
       stock: parseInt(stock),
-      category_id: parseInt(category_id)
+      category_id: parseInt(category_id),
+      images: images.length > 0 ? images : null,
+      image_url: images.length > 0 ? images[0] : null,
+      is_featured: is_featured === true || is_featured === 'true'
     };
 
-    console.log('Creating product with data:', productData);
+    console.log('Creating product with data:', {
+      ...productData,
+      images: productData.images
+    });
 
     const product = await Product.create(productData);
     
-    // Fetch the created product with category
     const createdProduct = await Product.findByPk(product.id, {
-      attributes: ['id', 'name', 'price', 'stock', 'description', 'image_url', 'category_id', 'slug', 'is_featured'],
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured'
+      ],
       include: [
         {
           model: Category,
@@ -195,7 +452,7 @@ const createProduct = async (req, res) => {
       ]
     });
 
-    console.log('Created product:', createdProduct.name);
+    console.log('✅ Created product:', createdProduct.name, 'with', createdProduct.images?.length || 0, 'images');
 
     res.status(201).json({ 
       success: true, 
@@ -203,7 +460,7 @@ const createProduct = async (req, res) => {
       message: 'Product created successfully'
     });
   } catch (error) {
-    console.error('Create product error:', error);
+    console.error('❌ Create product error:', error);
     
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
@@ -219,6 +476,7 @@ const createProduct = async (req, res) => {
   }
 };
 
+// 🔥 UPDATE PRODUCT - Multiple Images Support
 const updateProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
@@ -230,7 +488,6 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    // Verify category if provided
     if (req.body.category_id) {
       const category = await Category.findByPk(req.body.category_id);
       if (!category) {
@@ -241,7 +498,6 @@ const updateProduct = async (req, res) => {
       }
     }
 
-    // Auto-generate slug if name is being updated and no slug provided
     let updateData = { ...req.body };
     if (!updateData.slug && updateData.name) {
       updateData.slug = updateData.name.toLowerCase()
@@ -252,18 +508,69 @@ const updateProduct = async (req, res) => {
         .replace(/^-+|-+$/g, '');
     }
 
+    // 🔥 Handle multiple images
+    let images = product.images ? [...product.images] : [];
+    
+    // Option 1: New uploaded files
+    if (req.files && req.files.length > 0) {
+      const newImages = processUploadedImages(req.files);
+      images = [...images, ...newImages];
+      console.log('📸 Added new images:', newImages);
+    }
+    // Option 2: Image URLs from body
+    else if (req.body.images) {
+      try {
+        const bodyImages = typeof req.body.images === 'string' 
+          ? JSON.parse(req.body.images)
+          : req.body.images;
+        if (Array.isArray(bodyImages)) {
+          images = bodyImages;
+          console.log('🔗 Updated images from body:', images);
+        }
+      } catch (e) {
+        console.error('Error parsing images:', e);
+      }
+    }
+    // Option 3: Single image_url (backwards compatibility)
+    else if (req.body.image_url) {
+      if (images.length > 0) {
+        images[0] = req.body.image_url;
+      } else {
+        images = [req.body.image_url];
+      }
+      console.log('🔗 Updated main image (legacy)');
+    }
+
+    // Limit to 3 images max
+    images = images.slice(0, 3);
+
+    if (images.length > 0) {
+      updateData.images = images;
+      updateData.image_url = images[0];
+    }
+
     // Convert numeric fields
     if (updateData.price) updateData.price = parseFloat(updateData.price);
     if (updateData.stock !== undefined) updateData.stock = parseInt(updateData.stock);
     if (updateData.category_id) updateData.category_id = parseInt(updateData.category_id);
 
-    console.log('Updating product:', req.params.id);
+    console.log('Updating product:', req.params.id, 'with', images.length, 'images');
 
     await product.update(updateData);
     
-    // Fetch updated product with category
     const updatedProduct = await Product.findByPk(product.id, {
-      attributes: ['id', 'name', 'price', 'stock', 'description', 'image_url', 'category_id', 'slug', 'is_featured'],
+      attributes: [
+        'id', 
+        'name', 
+        'price', 
+        'stock', 
+        'description', 
+        'image_url',
+        'images', // 🔥 Added
+        'category_id', 
+        'slug', 
+        'is_featured'
+      ],
       include: [
         {
           model: Category,
@@ -279,7 +586,7 @@ const updateProduct = async (req, res) => {
       message: 'Product updated successfully'
     });
   } catch (error) {
-    console.error('Update product error:', error);
+    console.error('❌ Update product error:', error);
     
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
@@ -328,7 +635,6 @@ const searchProducts = async (req, res) => {
   try {
     const { q } = req.query;
     
-    // Validate search query
     if (!q || q.trim().length < 3) {
       return res.json({
         success: true,
@@ -339,20 +645,11 @@ const searchProducts = async (req, res) => {
 
     console.log('🔍 Searching for:', q);
 
-    // Search in products
     const products = await Product.findAll({
       where: {
-        [Op.or]: [
-          { 
-            name: { 
-              [Op.iLike]: `%${q}%`
-            } 
-          },
-          { 
-            description: { 
-              [Op.iLike]: `%${q}%` 
-            } 
-          }
+        [Op.or] : [
+          { name: { [Op.iLike]: `%${q}%` } },
+          { description: { [Op.iLike]: `%${q}%` } }
         ]
       },
       attributes: [
@@ -361,7 +658,8 @@ const searchProducts = async (req, res) => {
         'price', 
         'stock', 
         'description', 
-        'image_url', 
+        'image_url',
+        'images', // 🔥 Added
         'category_id', 
         'slug', 
         'is_featured'
@@ -400,7 +698,6 @@ const searchProducts = async (req, res) => {
   }
 };
 
-// Search suggestions (autocomplete)
 const getSearchSuggestions = async (req, res) => {
   try {
     const { q } = req.query;
@@ -415,20 +712,11 @@ const getSearchSuggestions = async (req, res) => {
     const searchTerm = q.trim();
     console.log('🔍 Getting suggestions for:', searchTerm);
     
-    // Search in products by name and description
     const suggestions = await Product.findAll({
       where: {
         [Op.or]: [
-          { 
-            name: {
-              [Op.iLike]: `%${searchTerm}%`
-            }
-          },
-          {
-            description: {
-              [Op.iLike]: `%${searchTerm}%`
-            }
-          }
+          { name: { [Op.iLike]: `%${searchTerm}%` } },
+          { description: { [Op.iLike]: `%${searchTerm}%` } }
         ]
       },
       include: [
@@ -438,19 +726,16 @@ const getSearchSuggestions = async (req, res) => {
           attributes: ['name']
         }
       ],
-      attributes: ['id', 'name', 'price', 'image_url', 'stock'],
+      attributes: ['id', 'name', 'price', 'image_url', 'images', 'stock'], // 🔥 Added images
       limit: 5,
-      order: [
-        ['name', 'ASC']
-      ]
+      order: [['name', 'ASC']]
     });
 
-    // Format suggestions
     const formattedSuggestions = suggestions.map(product => ({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image_url,
+      image: product.images && product.images.length > 0 ? product.images[0] : product.image_url, // 🔥 Use first image
       stock: product.stock,
       category: product.category?.name || null
     }));
@@ -472,8 +757,10 @@ const getSearchSuggestions = async (req, res) => {
 };
 
 module.exports = { 
-  getProducts, 
-  getProduct, 
+  getProducts,
+  getAllProducts,
+  getProduct,
+  getFeaturedProducts,
   createProduct, 
   updateProduct, 
   deleteProduct,
