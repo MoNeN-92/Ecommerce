@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       setLoading(false);
       return;
@@ -73,16 +73,16 @@ export const AuthProvider = ({ children }) => {
         setUser(result.user || { email });
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          message: result.message || 'შესვლა ვერ მოხერხდა' 
+        return {
+          success: false,
+          message: result.message || 'შესვლა ვერ მოხერხდა'
         };
       }
     } catch (error) {
       console.error('Login error:', error);
-      return { 
-        success: false, 
-        message: 'სერვერთან დაკავშირების შეცდომა' 
+      return {
+        success: false,
+        message: 'სერვერთან დაკავშირების შეცდომა'
       };
     }
   };
@@ -114,16 +114,16 @@ export const AuthProvider = ({ children }) => {
         setUser(result.user || { name, email });
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          message: result.message || 'რეგისტრაცია ვერ მოხერხდა' 
+        return {
+          success: false,
+          message: result.message || 'რეგისტრაცია ვერ მოხერხდა'
         };
       }
     } catch (error) {
       console.error('Register error:', error);
-      return { 
-        success: false, 
-        message: 'სერვერთან დაკავშირების შეცდომა' 
+      return {
+        success: false,
+        message: 'სერვერთან დაკავშირების შეცდომა'
       };
     }
   };
@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }) => {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        }).catch(() => {}); // Ignore logout errors
+        }).catch(() => { }); // Ignore logout errors
       }
     } catch (error) {
       console.error('Logout error:', error);
@@ -147,12 +147,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
-      
+
       // კალათის გასუფთავება
       if (typeof window !== 'undefined') {
         try {
           // ჯერ შეამოწმე არსებობს თუ არა useCartStore
-          const cartStore = require('@/store/cartStore');
+          const cartStore = require('../store/cartStore');
           if (cartStore && cartStore.default) {
             const { resetCart } = cartStore.default.getState();
             if (resetCart) {
