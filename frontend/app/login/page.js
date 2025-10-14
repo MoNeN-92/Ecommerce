@@ -144,7 +144,7 @@ function LoginContent() {
               )}
             </button>
 
-            {/* Demo Accounts */}
+            {/* Demo Accounts
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="font-medium text-gray-700 mb-3 text-sm">🎭 Demo Accounts:</p>
               <div className="space-y-2">
@@ -164,7 +164,7 @@ function LoginContent() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-2">Click to auto-fill credentials</p>
-            </div>
+            </div> */}
 
             {/* Register Link */}
             <div className="text-center">
