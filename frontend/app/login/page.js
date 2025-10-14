@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, Loader2, ShoppingBag, Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage() {
+// 🔥 LoginContent კომპონენტი - სადაც useSearchParams გამოიყენება
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, user } = useAuth();
@@ -167,7 +168,7 @@ export default function LoginPage() {
 
             {/* Register Link */}
             <div className="text-center">
-              <span className="text-gray-600">Don't have an account? </span>
+              <span className="text-gray-600">Don&apos;t have an account? </span>
               <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
                 Sign up
               </Link>
@@ -183,5 +184,24 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🔥 Main LoginPage კომპონენტი Suspense wrapper-ით
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4 animate-pulse">
+            <ShoppingBag className="w-8 h-8 text-white" />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
