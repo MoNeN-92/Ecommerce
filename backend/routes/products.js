@@ -4,24 +4,20 @@ const { protect } = require('../middleware/auth');
 const { single, multiple } = require('../middleware/upload');
 
 const { 
-  getProducts, 
-  getProduct,
-  getFeaturedProducts,
+  getAllProducts, 
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-  searchProducts,
-  getSearchSuggestions
+  searchProducts
 } = require('../controllers/productController');
 
 // Static GET routes first
-router.get('/featured', getFeaturedProducts);
-router.get('/search-suggestions', getSearchSuggestions);
 router.get('/search', searchProducts);
-router.get('/', getProducts);
+router.get('/', getAllProducts);
 
 // Dynamic GET route last
-router.get('/:id', getProduct);
+router.get('/:id', getProductById);
 
 // Protected POST/PUT routes using multiple wrapper
 router.post('/', protect, multiple('images', 3), createProduct);
