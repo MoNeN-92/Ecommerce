@@ -1,30 +1,80 @@
+// backend/config/database.js
 const { Sequelize } = require('sequelize');
 
-console.log('🔍 Checking DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Not Set');
+// Parse DATABASE_URL
+const parseDatabaseUrl = (url) => {
+  if (!url) return null;
+  
+  try {
+    // postgresql://user:password@host:port/database
+    const regex = /postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
+    const match = url.match(regex);
+    
+    if (match) {
+      return {
+        username: match[1],
+        password: match[2],
+        host: match[3],
+        port: match[4],
+        database: match[5]
+      };
+    }
+  } catch (error) {
+    console.error('❌ Parse error:', error.message);
+  }
+  return null;
+};
 
-// Use DATABASE_URL if available (Railway), otherwise use individual variables
-const sequelize = process.env.DATABASE_URL
-  ? new Sequelize(process.env.DATABASE_URL, {
-      dialect: 'postgres',
-      logging: false,
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
+// Get configuration
+let sequelize;
+
+try {
+  const databaseUrl = process.env.DATABASE_URL;
+  
+  console.log('🔍 Checking DATABASE_URL:', databaseUrl ? '✅ Set' : '❌ Not Set');
+  
+  // Priority 1: Use DATABASE_URL (Railway/Production)
+  if (databaseUrl) {
+    const parsed = parseDatabaseUrl(databaseUrl);
+    
+    if (parsed) {
+      console.log('✅ Using DATABASE_URL');
+      console.log('📊 Database:', parsed.database);
+      console.log('🖥️  Host:', parsed.host);
+      
+      sequelize = new Sequelize({
+        username: parsed.username,
+        password: parsed.password,
+        database: parsed.database,
+        host: parsed.host,
+        port: parsed.port,
+        dialect: 'postgres',
+        logging: false,
+        dialectOptions: {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false
+          }
+        },
+        pool: {
+          max: 5,
+          min: 0,
+          acquire: 30000,
+          idle: 10000
         }
-      },
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      }
-    })
-  : new Sequelize({
-      host: process.env.DB_HOST || 'localhost',
-      database: process.env.DB_NAME || 'ecommerce',
+      });
+    } else {
+      throw new Error('Failed to parse DATABASE_URL');
+    }
+  } else {
+    // Priority 2: Individual variables (Local Development)
+    console.log('⚠️  Using individual environment variables');
+    
+    sequelize = new Sequelize({
       username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_NAME || 'ecommerce',
+      host: process.env.DB_HOST || 'localhost',
       port: process.env.DB_PORT || 5432,
       dialect: 'postgres',
       logging: false,
@@ -35,10 +85,20 @@ const sequelize = process.env.DATABASE_URL
         idle: 10000
       }
     });
+  }
 
-// Test connection
-sequelize.authenticate()
-  .then(() => console.log('✅ Database connection established successfully'))
-  .catch(err => console.error('❌ Unable to connect to database:', err.message));
+  // Test connection (async, don't block)
+  sequelize.authenticate()
+    .then(() => {
+      console.log('✅ Database connection established successfully');
+    })
+    .catch((error) => {
+      console.error('❌ Database connection failed:', error.message);
+    });
+
+} catch (error) {
+  console.error('❌ Sequelize initialization failed:', error.message);
+  process.exit(1);
+}
 
 module.exports = sequelize;
