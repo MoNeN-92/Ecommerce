@@ -15,7 +15,15 @@ export default function HomePage() {
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  // Production API URL - Railway Backend
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 Environment Check:');
+    console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('API_URL being used:', API_URL);
+  }, []);
 
   const categoryIcons = {
     'Electronics': <Laptop className="w-6 h-6" />,
@@ -55,16 +63,35 @@ export default function HomePage() {
   const fetchFeaturedProducts = async () => {
     try {
       setFeaturedLoading(true);
-      const res = await fetch(`${API_URL}/products/featured`, {
-        cache: 'no-store'
+      
+      const url = `${API_URL}/products/featured`;
+      console.log('📡 Fetching featured products from:', url);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
+      console.log('✅ Featured products response status:', res.status);
 
       if (res.ok) {
         const data = await res.json();
+        console.log('✅ Featured products data:', data);
         setFeaturedProducts(data.data || []);
+      } else {
+        console.error('❌ Featured products fetch failed:', res.status, res.statusText);
       }
     } catch (error) {
-      console.error('Error fetching featured products:', error);
+      console.error('❌ Error fetching featured products:', error);
     } finally {
       setFeaturedLoading(false);
     }
@@ -79,40 +106,63 @@ export default function HomePage() {
         url += `&category=${selectedCategory}`;
       }
 
+      console.log('📡 Fetching products from:', url);
+
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       const res = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         cache: 'no-store',
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
+      console.log('✅ Products response status:', res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log('✅ Products data:', data);
         setProducts(data.data || []);
+      } else {
+        console.error('❌ Products fetch failed:', res.status, res.statusText);
       }
 
+      // Fetch categories
       try {
-        const categoriesRes = await fetch(`${API_URL}/categories`, { cache: 'no-store' });
+        const categoriesUrl = `${API_URL}/categories`;
+        console.log('📡 Fetching categories from:', categoriesUrl);
+        
+        const categoriesRes = await fetch(categoriesUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store'
+        });
+
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
+          console.log('✅ Categories data:', categoriesData);
           setCategories([
             { id: 'all', name: 'All', count: 0 },
             ...(categoriesData.data || [])
           ]);
         } else {
+          console.warn('⚠️ Categories fetch failed, using static categories');
           setCategories(staticCategories);
         }
-      } catch {
+      } catch (catError) {
+        console.error('❌ Categories error:', catError);
         setCategories(staticCategories);
       }
 
     } catch (err) {
-      console.error('Fetch error:', err);
+      console.error('❌ Fetch error:', err);
       setCategories(staticCategories);
     } finally {
       setLoading(false);
@@ -147,8 +197,9 @@ export default function HomePage() {
             {featuredProducts.map((product, index) => (
               <div
                 key={product.id}
-                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 scale-100 z-20' : 'opacity-0 scale-95 z-10 pointer-events-none'
-                  }`}
+                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                  index === currentSlide ? 'opacity-100 scale-100 z-20' : 'opacity-0 scale-95 z-10 pointer-events-none'
+                }`}
               >
                 <div className="h-full max-w-7xl mx-auto px-6 lg:px-8 flex items-center relative z-10">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 w-full items-center">
@@ -221,7 +272,6 @@ export default function HomePage() {
             ))}
 
             {/* Navigation */}
-            {/* Navigation */}
             {featuredProducts.length > 1 && (
               <>
                 <button
@@ -249,10 +299,11 @@ export default function HomePage() {
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
-                      className={`transition-all duration-300 cursor-pointer ${index === currentSlide
+                      className={`transition-all duration-300 cursor-pointer ${
+                        index === currentSlide
                           ? 'w-8 h-2 bg-slate-900'
                           : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
-                        } rounded-full`}
+                      } rounded-full`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
@@ -314,11 +365,12 @@ export default function HomePage() {
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id === 'all' ? 'all' : category.name)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all ${(category.id === 'all' && selectedCategory === 'all') ||
-                  (category.name === selectedCategory)
+              className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all ${
+                (category.id === 'all' && selectedCategory === 'all') ||
+                (category.name === selectedCategory)
                   ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
+              }`}
             >
               {categoryIcons[category.name] || <Package className="w-5 h-5" />}
               <span>{category.name}</span>
