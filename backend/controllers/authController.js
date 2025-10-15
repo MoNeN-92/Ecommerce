@@ -1,8 +1,21 @@
 // backend/controllers/authController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const generateToken = require('../utils/generateToken');
+const jwt = require('jsonwebtoken');
 const emailService = require('../services/emailService');
+
+// Generate JWT Token with role
+const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      id: user.id,
+      email: user.email,
+      role: user.role  // ✅ CRITICAL: Include role!
+    },
+    process.env.JWT_SECRET || 'your-secret-key',
+    { expiresIn: '30d' }
+  );
+};
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -31,8 +44,10 @@ exports.register = async (req, res) => {
       role: 'customer'
     });
 
-    // Generate JWT token
-    const token = generateToken(user.id);
+    // Generate JWT token with role
+    const token = generateToken(user);
+
+    console.log('✅ User registered:', email, 'Role:', user.role);
 
     // Send Welcome Email (async, non-blocking)
     try {
@@ -67,17 +82,35 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    console.log('📥 Login attempt:', email);
+
+    // Find user with all necessary fields
+    const user = await User.findOne({ 
+      where: { email },
+      attributes: ['id', 'name', 'email', 'password', 'role', 'phone', 'profile_image']
+    });
+
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      console.log('❌ User not found:', email);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      console.log('❌ Invalid password for:', email);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
     }
 
-    const token = generateToken(user.id);
+    // Generate token WITH role
+    const token = generateToken(user);
+
+    console.log('✅ Login successful:', email, 'Role:', user.role);
 
     return res.json({
       success: true,
@@ -86,12 +119,17 @@ exports.login = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phone: user.phone,
+        profile_image: user.profile_image
       }
     });
   } catch (error) {
     console.error('💥 Login error:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
   }
 };
 
@@ -113,11 +151,21 @@ exports.getMe = async (req, res) => {
 
     return res.json({
       success: true,
-      user
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        profile_image: user.profile_image
+      }
     });
   } catch (error) {
     console.error('getMe error:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
   }
 };
 
@@ -144,11 +192,16 @@ exports.verifyToken = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phone: user.phone,
+        profile_image: user.profile_image
       }
     });
   } catch (error) {
     console.error('verifyToken error:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
   }
 };
