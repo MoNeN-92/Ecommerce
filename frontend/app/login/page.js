@@ -144,28 +144,7 @@ function LoginContent() {
               )}
             </button>
 
-            {/* Demo Accounts
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-medium text-gray-700 mb-3 text-sm">🎭 Demo Accounts:</p>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => quickLogin('admin@demo.com', 'admin123')}
-                  className="w-full text-left px-3 py-2 bg-purple-100 hover:bg-purple-200 rounded text-sm text-purple-700 transition"
-                >
-                  <span className="font-medium">👑 Admin:</span> admin@demo.com / admin123
-                </button>
-                <button
-                  type="button"
-                  onClick={() => quickLogin('user@demo.com', 'user123')}
-                  className="w-full text-left px-3 py-2 bg-green-100 hover:bg-green-200 rounded text-sm text-green-700 transition"
-                >
-                  <span className="font-medium">👤 User:</span> user@demo.com / user123
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Click to auto-fill credentials</p>
-            </div> */}
-
+            
             {/* Register Link */}
             <div className="text-center">
               <span className="text-gray-600">Don&apos;t have an account? </span>
