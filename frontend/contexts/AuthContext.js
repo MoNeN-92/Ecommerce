@@ -29,7 +29,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+      
+      const response = await fetch(`${API_URL}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -37,19 +39,24 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ Auth check response:', result);
+        
         if (result.success && result.user) {
+          console.log('✅ Setting user from /me:', result.user);
           setUser(result.user);
         } else if (result.user) {
-          // Backend might not send 'success' field
+          console.log('✅ Setting user (no success field):', result.user);
           setUser(result.user);
         } else {
+          console.log('❌ No user in response');
           localStorage.removeItem('token');
         }
       } else {
+        console.log('❌ Auth check failed:', response.status);
         localStorage.removeItem('token');
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.error('❌ Auth check error:', error);
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
@@ -58,7 +65,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+      
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -67,10 +76,20 @@ export const AuthProvider = ({ children }) => {
       });
 
       const result = await response.json();
+      console.log('✅ Login response:', result);
 
       if (response.ok && result.token) {
         localStorage.setItem('token', result.token);
-        setUser(result.user || { email });
+        
+        // CRITICAL: Make sure to save the full user object with role
+        if (result.user) {
+          console.log('✅ Setting user after login:', result.user);
+          setUser(result.user);
+        } else {
+          console.warn('⚠️ No user object in login response');
+          setUser({ email });
+        }
+        
         return { success: true };
       } else {
         return {
@@ -79,7 +98,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
       return {
         success: false,
         message: 'სერვერთან დაკავშირების შეცდომა'
@@ -87,31 +106,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ გამოსწორებული register ფუნქცია
   const register = async (name, email, password) => {
     try {
-      // მონაცემების მომზადება - სწორი ფორმატით
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+      
       const userData = {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         password: password
       };
 
-      console.log('Registering with:', userData);
+      console.log('📝 Registering with:', userData);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(userData) // მხოლოდ ერთხელ stringify
+        body: JSON.stringify(userData)
       });
 
       const result = await response.json();
+      console.log('✅ Register response:', result);
 
       if (response.ok && result.token) {
         localStorage.setItem('token', result.token);
-        setUser(result.user || { name, email });
+        
+        // Save full user object with role
+        if (result.user) {
+          console.log('✅ Setting user after register:', result.user);
+          setUser(result.user);
+        } else {
+          setUser({ name, email, role: 'customer' });
+        }
+        
         return { success: true };
       } else {
         return {
@@ -120,7 +148,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
-      console.error('Register error:', error);
+      console.error('❌ Register error:', error);
       return {
         success: false,
         message: 'სერვერთან დაკავშირების შეცდომა'
@@ -130,28 +158,27 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // შეიძლება გინდოდეს Backend-ზე logout endpoint-ის გამოძახება
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+        
+        await fetch(`${API_URL}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        }).catch(() => { }); // Ignore logout errors
+        }).catch(() => {});
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // ყოველთვის წაშალე ლოკალური მონაცემები
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
 
-      // კალათის გასუფთავება
+      // Clear cart
       if (typeof window !== 'undefined') {
         try {
-          // ჯერ შეამოწმე არსებობს თუ არა useCartStore
           const cartStore = require('../store/useCartStore');
           if (cartStore && cartStore.default) {
             const { resetCart } = cartStore.default.getState();
@@ -166,19 +193,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ადმინის შემოწმება
   const isAdmin = () => {
+    console.log('🔍 isAdmin check:', user?.role);
     return user && user.role === 'admin';
   };
 
-  // მომხმარებლის განახლება (პროფილის რედაქტირებისთვის)
   const updateUser = (updatedData) => {
     setUser(prev => ({ ...prev, ...updatedData }));
-    // შეინახე localStorage-შიც
     if (user) {
       localStorage.setItem('user', JSON.stringify({ ...user, ...updatedData }));
     }
   };
+
+  // Debug logging
+  useEffect(() => {
+    console.log('=== AUTH CONTEXT STATE ===');
+    console.log('User:', user);
+    console.log('User Role:', user?.role);
+    console.log('Is Admin:', user?.role === 'admin');
+    console.log('Loading:', loading);
+    console.log('=========================');
+  }, [user, loading]);
 
   const value = {
     user,
