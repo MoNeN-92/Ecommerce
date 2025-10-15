@@ -251,18 +251,3 @@ exports.searchProducts = async (req, res) => {
     });
   }
 };
-```
-
----
-
-## 🔐 **ნაბიჯ 4: Environment Variables**
-
-### **4.1 Railway-ზე:**
-
-1. Railway Dashboard → **Backend service**
-2. **Variables** tab
-3. **New Variable** ღილაკი
-4. დაამატე:
-```
-Name: IMGBB_API_KEY
-Value: d76f9a200f6ba87aa5d9710d648e5e4e 
