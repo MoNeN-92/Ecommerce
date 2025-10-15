@@ -1,7 +1,5 @@
 // backend/controllers/productController.js
 const { Product, Category } = require('../models');
-const imgbbUploader = require('imgbb-uploader');
-const { Op } = require('sequelize');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -69,28 +67,13 @@ exports.createProduct = async (req, res) => {
 
     console.log('📦 Creating product:', name);
 
-    // Upload image to ImgBB
+    // Convert image to Base64
     let image_url = null;
     if (req.file) {
-      console.log('📸 Uploading image to ImgBB...');
-      
-      try {
-        const response = await imgbbUploader({
-          apiKey: process.env.IMGBB_API_KEY,
-          base64string: req.file.buffer.toString('base64'),
-          name: `${Date.now()}-${name}`,
-          expiration: null // Never expire
-        });
-
-        image_url = response.url;
-        console.log('✅ Image uploaded:', image_url);
-      } catch (uploadError) {
-        console.error('❌ ImgBB upload error:', uploadError);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to upload image to ImgBB'
-        });
-      }
+      console.log('📸 Converting image to Base64...');
+      const base64Image = req.file.buffer.toString('base64');
+      image_url = `data:${req.file.mimetype};base64,${base64Image}`;
+      console.log('✅ Image converted');
     }
 
     const product = await Product.create({
@@ -136,28 +119,13 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Upload new image if provided
+    // Update image if new file uploaded
     let image_url = product.image_url;
     if (req.file) {
-      console.log('📸 Uploading new image to ImgBB...');
-      
-      try {
-        const response = await imgbbUploader({
-          apiKey: process.env.IMGBB_API_KEY,
-          base64string: req.file.buffer.toString('base64'),
-          name: `${Date.now()}-${name}`,
-          expiration: null
-        });
-
-        image_url = response.url;
-        console.log('✅ New image uploaded:', image_url);
-      } catch (uploadError) {
-        console.error('❌ ImgBB upload error:', uploadError);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to upload image to ImgBB'
-        });
-      }
+      console.log('📸 Converting new image to Base64...');
+      const base64Image = req.file.buffer.toString('base64');
+      image_url = `data:${req.file.mimetype};base64,${base64Image}`;
+      console.log('✅ Image converted');
     }
 
     await product.update({
@@ -230,7 +198,7 @@ exports.searchProducts = async (req, res) => {
     const products = await Product.findAll({
       where: {
         name: {
-          [Op.iLike]: `%${q}%`
+          [require('sequelize').Op.iLike]: `%${q}%`
         }
       },
       include: [{ 
