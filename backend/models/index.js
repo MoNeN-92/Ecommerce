@@ -1,5 +1,5 @@
 // backend/models/index.js
-const { sequelize } = require('../config/database');
+const sequelize = require('../config/database');
 
 // Import all models directly (they are already initialized)
 const User = require('./User');
