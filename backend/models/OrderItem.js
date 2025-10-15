@@ -1,7 +1,6 @@
 // backend/models/OrderItem.js
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-
+const sequelize = require('../config/database'); // ✅
 const OrderItem = sequelize.define('OrderItem', {
   id: {
     type: DataTypes.INTEGER,

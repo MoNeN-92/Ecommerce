@@ -1,8 +1,7 @@
 // backend/models/Review.js
 
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-
+const sequelize = require('../config/database'); // ✅
 const Review = sequelize.define('Review', {
   id: {
     type: DataTypes.INTEGER,

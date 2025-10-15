@@ -1,7 +1,6 @@
 // backend/models/Cart.js
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-
+const sequelize = require('../config/database'); // ✅
 const Cart = sequelize.define('Cart', {
   id: {
     type: DataTypes.INTEGER,
