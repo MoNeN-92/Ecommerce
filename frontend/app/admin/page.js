@@ -269,6 +269,25 @@ function AdminDashboardContent() {
             Welcome back! Here&apos;s what&apos;s happening with your store.
           </p>
         </div>
+        return (
+  <div className="min-h-screen bg-gray-50">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* ... */}
+      
+      {/* ეს ნაწილი სადაც StatCard-ებს იყენებს */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Total Products"
+          value={stats.totalProducts}  // ← აქ რა წერია?
+          icon={Package}
+          color="bg-blue-600"
+          link="/admin/products"
+        />
+        {/* და ა.შ. */}
+      </div>
+    </div>
+  </div>
+);
         {/* ... დანარჩენი კოდი უცვლელია ... */}
       </div>
     </div>
