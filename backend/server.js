@@ -39,7 +39,8 @@ const allowedOrigins = [
   'https://ecommerce-7abn.vercel.app',
   'https://ecommerce-7abn-git-main-monen-92s-projects.vercel.app',
   'https://ecommerce-7abn-ng4w24z4e-monen-92s-projects.vercel.app',
-  'https://ecommerce-7abn-cujtbg6v1-monen-92s-projects.vercel.app'
+  'https://ecommerce-7abn-cujtbg6v1-monen-92s-projects.vercel.app',
+    'https://ecommerce-snowy-eta-40.vercel.app' // ✅ დაამატე ეს ხაზი
 ];
 
 app.use(cors({
