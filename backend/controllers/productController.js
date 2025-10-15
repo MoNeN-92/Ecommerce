@@ -1,6 +1,7 @@
 // backend/controllers/productController.js
 const { Product, Category } = require('../models');
 const imgbbUploader = require('imgbb-uploader');
+const { Op } = require('sequelize');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -229,7 +230,7 @@ exports.searchProducts = async (req, res) => {
     const products = await Product.findAll({
       where: {
         name: {
-          [require('sequelize').Op.iLike]: `%${q}%`
+          [Op.iLike]: `%${q}%`
         }
       },
       include: [{ 
