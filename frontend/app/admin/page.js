@@ -22,7 +22,9 @@ import {
   Truck,
   CreditCard,
   ShoppingBag,
-  Activity
+  Activity,
+  Download,
+  Mail
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -49,23 +51,42 @@ function AdminDashboardContent() {
   const [recentProducts, setRecentProducts] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [recentInvoices, setRecentInvoices] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
+  const createCategory = async () => {
+    if (!categoryName) return;
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: categoryName })
+    });
+
+    if (res.ok) {
+      alert('Category created!');
+      setCategoryName('');
+      setShowCategoryModal(false);
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
 
-      console.log('📊 Fetching dashboard data...');
-
-      // Try dashboard statistics endpoint
+      // Try fetching dashboard statistics from backend
       try {
-        const statsRes = await fetch(`${API_URL}/dashboard/statistics`, {
+        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/statistics`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -74,9 +95,8 @@ function AdminDashboardContent() {
 
         if (statsRes.ok) {
           const statsData = await statsRes.json();
-          console.log('✅ Dashboard data:', statsData);
-
           if (statsData.success && statsData.data) {
+            // Update stats from backend
             setStats({
               totalProducts: statsData.data.products?.total || 0,
               totalOrders: statsData.data.orders?.total || 0,
@@ -98,27 +118,18 @@ function AdminDashboardContent() {
 
             setRecentProducts(statsData.data.recentProducts || []);
             setRecentOrders(statsData.data.recentOrders || []);
-
-            // Generate invoices from orders
-            const invoices = (statsData.data.recentOrders || []).slice(0, 5).map(order => ({
-              id: order.id,
-              invoiceNumber: `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(order.id).padStart(5, '0')}`,
-              orderNumber: order.order_number || order.id,
-              customerName: order.User?.name || 'Guest',
-              amount: order.total_amount,
-              status: order.payment_status || order.status || 'pending',
-              date: order.created_at
-            }));
-            setRecentInvoices(invoices);
+            setTopProducts(statsData.data.topProducts || []);
           }
         }
       } catch (dashboardError) {
         console.log('Dashboard endpoint not available, fetching individual data...');
+
+        // Fallback: Fetch individual endpoints
         await fetchIndividualStats(token);
       }
 
     } catch (error) {
-      console.error('❌ Error fetching dashboard data:', error);
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -127,7 +138,7 @@ function AdminDashboardContent() {
   const fetchIndividualStats = async (token) => {
     try {
       // Fetch products
-      const productsRes = await fetch(`${API_URL}/products`, {
+      const productsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -146,7 +157,7 @@ function AdminDashboardContent() {
       }
 
       // Fetch orders
-      const ordersRes = await fetch(`${API_URL}/orders/admin/all`, {
+      const ordersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/admin/all`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -180,14 +191,14 @@ function AdminDashboardContent() {
 
         setRecentOrders(orders.slice(0, 5));
 
-        // Generate invoices
+        // Generate recent invoices from orders
         const invoices = orders.slice(0, 5).map(order => ({
           id: order.id,
           invoiceNumber: `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(order.id).padStart(5, '0')}`,
           orderNumber: order.order_number || order.id,
           customerName: order.User?.name || 'Guest',
           amount: order.total_amount,
-          status: order.payment_status || order.status || 'pending',
+          status: order.payment_status || 'pending',
           date: order.created_at
         }));
         setRecentInvoices(invoices);
@@ -251,11 +262,8 @@ function AdminDashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">ჩატვირთვა...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -266,9 +274,7 @@ function AdminDashboardContent() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Welcome back! Here&apos;s what&apos;s happening with your store.
-          </p>
+          <p className="text-gray-600 mt-1">Welcome back! Here&apos;s what&apos;s happening with your store.</p>
         </div>
 
         {/* Main Stats Grid */}
@@ -306,27 +312,27 @@ function AdminDashboardContent() {
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Status Overview</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow text-center hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 rounded-lg shadow text-center">
               <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{stats.pendingOrders}</p>
               <p className="text-xs text-gray-600">Pending</p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 rounded-lg shadow text-center">
               <Package className="w-8 h-8 text-blue-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{stats.processingOrders}</p>
               <p className="text-xs text-gray-600">Processing</p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 rounded-lg shadow text-center">
               <Truck className="w-8 h-8 text-purple-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{stats.shippedOrders}</p>
               <p className="text-xs text-gray-600">Shipped</p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 rounded-lg shadow text-center">
               <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{stats.deliveredOrders}</p>
               <p className="text-xs text-gray-600">Delivered</p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center hover:shadow-md transition-shadow">
+            <div className="bg-white p-4 rounded-lg shadow text-center">
               <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{stats.cancelledOrders}</p>
               <p className="text-xs text-gray-600">Cancelled</p>
@@ -348,7 +354,7 @@ function AdminDashboardContent() {
                     </p>
                   </div>
                   <Link
-                    href="/admin/products"
+                    href="/admin/products?filter=low-stock"
                     className="ml-auto text-sm text-yellow-800 hover:text-yellow-900 font-medium"
                   >
                     View Products
@@ -368,7 +374,7 @@ function AdminDashboardContent() {
                     </p>
                   </div>
                   <Link
-                    href="/admin/products"
+                    href="/admin/products?filter=out-of-stock"
                     className="ml-auto text-sm text-red-800 hover:text-red-900 font-medium"
                   >
                     View Products
@@ -396,28 +402,28 @@ function AdminDashboardContent() {
             </div>
           </Link>
 
-          <Link
-            href="/admin/categories"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow group"
+          <button
+            onClick={() => setShowCategoryModal(true)}
+            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow group text-left"
           >
             <div className="flex items-center">
               <div className="p-3 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
-                <BarChart3 className="w-6 h-6 text-green-600" />
+                <Plus className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <h3 className="font-medium text-gray-900">Categories</h3>
-                <p className="text-sm text-gray-600">Manage categories</p>
+                <h3 className="font-medium text-gray-900">Add Category</h3>
+                <p className="text-sm text-gray-600">Create new category</p>
               </div>
             </div>
-          </Link>
+          </button>
 
           <Link
             href="/admin/orders"
             className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">
-                <ShoppingCart className="w-6 h-6 text-purple-600" />
+              <div className="p-3 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
+                <ShoppingCart className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
                 <h3 className="font-medium text-gray-900">View Orders</h3>
@@ -431,8 +437,8 @@ function AdminDashboardContent() {
             className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-100 group-hover:bg-orange-200 transition-colors">
-                <FileText className="w-6 h-6 text-orange-600" />
+              <div className="p-3 rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">
+                <FileText className="w-6 h-6 text-purple-600" />
               </div>
               <div className="ml-4">
                 <h3 className="font-medium text-gray-900">Invoices</h3>
@@ -490,7 +496,7 @@ function AdminDashboardContent() {
             </div>
           </div>
 
-          {/* Recent Products - ფოტოებით */}
+          {/* Recent Products */}
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -509,7 +515,7 @@ function AdminDashboardContent() {
                   recentProducts.map((product) => (
                     <div key={product.id} className="flex items-center space-x-4">
                       <img
-                        className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                        className="w-10 h-10 rounded object-cover"
                         src={product.image_url || '/placeholder-product.png'}
                         alt={product.name}
                         onError={(e) => {
@@ -536,7 +542,6 @@ function AdminDashboardContent() {
                   ))
                 ) : (
                   <div className="text-center py-4">
-                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500 mb-3">No products yet</p>
                     <Link
                       href="/admin/products/new"
@@ -556,7 +561,7 @@ function AdminDashboardContent() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium text-gray-900">Recent Invoices</h2>
                 <Link
-                  href="/admin/invoices"
+                  href="/admin/orders"
                   className="text-sm text-blue-600 hover:text-blue-800"
                 >
                   View all
@@ -581,13 +586,13 @@ function AdminDashboardContent() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          invoice.status === 'completed' || invoice.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                          invoice.status === 'completed' ? 'bg-green-100 text-green-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
                           {invoice.status}
                         </span>
                         <Link
-                          href={`/admin/invoices/${invoice.id}`}
+                          href={`/admin/orders/invoice/${invoice.id}`}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           <Eye className="w-4 h-4" />
@@ -603,6 +608,36 @@ function AdminDashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Category Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h3 className="text-lg font-bold mb-4">Create Category</h3>
+            <input
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="Category name"
+              className="w-full px-3 py-2 border rounded mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCategoryModal(false)}
+                className="flex-1 py-2 border rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createCategory}
+                className="flex-1 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
