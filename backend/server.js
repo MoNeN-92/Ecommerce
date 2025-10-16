@@ -98,6 +98,8 @@ const userRoutes = require('./routes/user');
 const cartRoutes = require('./routes/cart');
 const checkoutRoutes = require('./routes/checkout');
 
+app.options('*', cors());
+
 // Routes registration
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/cart', cartRoutes);
