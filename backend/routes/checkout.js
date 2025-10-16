@@ -4,9 +4,17 @@ const router = express.Router();
 const checkoutController = require('../controllers/checkoutController');
 const { protect } = require('../middleware/auth');
 
-router.use(protect);
+// ✅ OPTIONS requests უნდა გაიაროს protect-ის გარეშე
+router.options('/', (req, res) => {
+  res.sendStatus(200);
+});
 
-router.get('/', checkoutController.getCheckoutData);
-router.post('/', checkoutController.processCheckout);
+router.options('/*', (req, res) => {
+  res.sendStatus(200);
+});
+
+// ✅ Protected routes with explicit protect middleware per route
+router.get('/', protect, checkoutController.getCheckoutData);
+router.post('/', protect, checkoutController.processCheckout);
 
 module.exports = router;
