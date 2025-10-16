@@ -76,7 +76,7 @@ const Navbar = () => {
               href="/" 
               className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 hover:text-blue-700 transition whitespace-nowrap"
             >
-              E-Commerce
+              SmallMall.ge
             </Link>
           </div>
 
