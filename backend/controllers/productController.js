@@ -26,6 +26,33 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+// @desc    Get featured products
+// @route   GET /api/products/featured
+exports.getFeaturedProducts = async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      where: { is_featured: true },
+      include: [{ 
+        model: Category,
+        attributes: ['id', 'name']
+      }],
+      limit: 8,
+      order: [['created_at', 'DESC']]
+    });
+
+    return res.json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    console.error('Get featured products error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // @desc    Get single product
 // @route   GET /api/products/:id
 exports.getProductById = async (req, res) => {
@@ -59,22 +86,30 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// @desc    Create product
+// @desc    Create product (supports up to 3 images)
 // @route   POST /api/products
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, category_id } = req.body;
+    const { name, description, price, stock, category_id, is_featured } = req.body;
 
     console.log('📦 Creating product:', name);
+    console.log('📸 Files received:', req.files ? req.files.length : 0);
 
-    // Convert image to Base64
-    let image_url = null;
-    if (req.file) {
-      console.log('📸 Converting image to Base64...');
-      const base64Image = req.file.buffer.toString('base64');
-      image_url = `data:${req.file.mimetype};base64,${base64Image}`;
-      console.log('✅ Image converted');
+    // Convert multiple images to Base64 array
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      console.log('📸 Converting images to Base64...');
+      
+      images = req.files.map(file => {
+        const base64Image = file.buffer.toString('base64');
+        return `data:${file.mimetype};base64,${base64Image}`;
+      });
+
+      console.log(`✅ ${images.length} images converted`);
     }
+
+    // For backward compatibility, keep first image in image_url
+    const image_url = images.length > 0 ? images[0] : null;
 
     const product = await Product.create({
       name,
@@ -82,7 +117,9 @@ exports.createProduct = async (req, res) => {
       price,
       stock,
       category_id,
-      image_url
+      image_url,      // First image (backward compatibility)
+      images,         // All images as JSON array
+      is_featured: is_featured || false
     });
 
     console.log('✅ Product created:', product.id);
@@ -101,12 +138,12 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// @desc    Update product
+// @desc    Update product (supports up to 3 images)
 // @route   PUT /api/products/:id
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, category_id } = req.body;
+    const { name, description, price, stock, category_id, is_featured } = req.body;
 
     console.log('📝 Updating product:', id);
 
@@ -119,13 +156,22 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Update image if new file uploaded
+    // Keep existing images if no new files uploaded
+    let images = product.images || [];
     let image_url = product.image_url;
-    if (req.file) {
-      console.log('📸 Converting new image to Base64...');
-      const base64Image = req.file.buffer.toString('base64');
-      image_url = `data:${req.file.mimetype};base64,${base64Image}`;
-      console.log('✅ Image converted');
+
+    // If new files uploaded, convert them to Base64
+    if (req.files && req.files.length > 0) {
+      console.log(`📸 Converting ${req.files.length} new images to Base64...`);
+      
+      images = req.files.map(file => {
+        const base64Image = file.buffer.toString('base64');
+        return `data:${file.mimetype};base64,${base64Image}`;
+      });
+
+      image_url = images[0]; // Update main image
+
+      console.log(`✅ ${images.length} images converted`);
     }
 
     await product.update({
@@ -134,7 +180,9 @@ exports.updateProduct = async (req, res) => {
       price,
       stock,
       category_id,
-      image_url
+      image_url,
+      images,
+      is_featured: is_featured !== undefined ? is_featured : product.is_featured
     });
 
     console.log('✅ Product updated:', id);
