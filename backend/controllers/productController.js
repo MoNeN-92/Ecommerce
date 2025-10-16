@@ -8,6 +8,7 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.findAll({
       include: [{ 
         model: Category,
+        as: 'category',  // ✅ დამატებული
         attributes: ['id', 'name']
       }],
       order: [['created_at', 'DESC']]
@@ -34,6 +35,7 @@ exports.getFeaturedProducts = async (req, res) => {
       where: { is_featured: true },
       include: [{ 
         model: Category,
+        as: 'category',  // ✅ დამატებული
         attributes: ['id', 'name']
       }],
       limit: 8,
@@ -62,6 +64,7 @@ exports.getProductById = async (req, res) => {
     const product = await Product.findByPk(id, {
       include: [{ 
         model: Category,
+        as: 'category',  // ✅ დამატებული
         attributes: ['id', 'name']
       }]
     });
@@ -251,6 +254,7 @@ exports.searchProducts = async (req, res) => {
       },
       include: [{ 
         model: Category,
+        as: 'category',  // ✅ დამატებული
         attributes: ['id', 'name']
       }],
       limit: 10
