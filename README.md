@@ -20,3 +20,4 @@ Clone the project:
 ```bash
 git clone https://github.com/MoNeN-92/Ecommerce.git
 cd Ecommerce
+# Updated
