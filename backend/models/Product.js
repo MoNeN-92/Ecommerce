@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // ✅
+const sequelize = require('../config/database');
+
 const Product = sequelize.define('Product', {
   id: {
     type: DataTypes.INTEGER,
@@ -29,7 +30,7 @@ const Product = sequelize.define('Product', {
     defaultValue: 0
   },
   image_url: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,  // ✅ STRING → TEXT (Base64-სთვის)
     allowNull: true
   },
   images: {
