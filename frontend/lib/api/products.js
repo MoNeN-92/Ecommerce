@@ -31,7 +31,7 @@ export async function getProducts(params = {}) {
   }
 }
 
-// ✅ Get featured products
+//  Get featured products
 export async function getFeaturedProducts() {
   try {
     const res = await fetch(`${API_URL}/products/featured`, {
