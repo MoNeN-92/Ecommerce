@@ -1,6 +1,17 @@
 // backend/controllers/productController.js
 const { Product, Category } = require('../models');
 
+// Helper function to generate slug from name
+const generateSlug = (name) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')      // Replace spaces with -
+    .replace(/-+/g, '-')       // Replace multiple - with single -
+    .substring(0, 50);         // Limit length
+};
+
 // @desc    Get all products
 // @route   GET /api/products
 exports.getAllProducts = async (req, res) => {
@@ -8,7 +19,7 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.findAll({
       include: [{ 
         model: Category,
-        as: 'category',  // ✅ დამატებული
+        as: 'category',
         attributes: ['id', 'name']
       }],
       order: [['created_at', 'DESC']]
@@ -35,7 +46,7 @@ exports.getFeaturedProducts = async (req, res) => {
       where: { is_featured: true },
       include: [{ 
         model: Category,
-        as: 'category',  // ✅ დამატებული
+        as: 'category',
         attributes: ['id', 'name']
       }],
       limit: 8,
@@ -64,7 +75,7 @@ exports.getProductById = async (req, res) => {
     const product = await Product.findByPk(id, {
       include: [{ 
         model: Category,
-        as: 'category',  // ✅ დამატებული
+        as: 'category',
         attributes: ['id', 'name']
       }]
     });
@@ -98,6 +109,10 @@ exports.createProduct = async (req, res) => {
     console.log('📦 Creating product:', name);
     console.log('📸 Files received:', req.files ? req.files.length : 0);
 
+    // ✅ Generate slug from name
+    const slug = generateSlug(name);
+    console.log('🔗 Generated slug:', slug);
+
     // Convert multiple images to Base64 array
     let images = [];
     if (req.files && req.files.length > 0) {
@@ -116,12 +131,13 @@ exports.createProduct = async (req, res) => {
 
     const product = await Product.create({
       name,
+      slug,           // ✅ დამატებული!
       description,
       price,
       stock,
       category_id,
-      image_url,      // First image (backward compatibility)
-      images,         // All images as JSON array
+      image_url,
+      images,
       is_featured: is_featured || false
     });
 
@@ -159,6 +175,13 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
+    // ✅ Generate new slug if name changed
+    let slug = product.slug;
+    if (name && name !== product.name) {
+      slug = generateSlug(name);
+      console.log('🔗 Updated slug:', slug);
+    }
+
     // Keep existing images if no new files uploaded
     let images = product.images || [];
     let image_url = product.image_url;
@@ -179,6 +202,7 @@ exports.updateProduct = async (req, res) => {
 
     await product.update({
       name,
+      slug,           // ✅ დამატებული!
       description,
       price,
       stock,
@@ -254,7 +278,7 @@ exports.searchProducts = async (req, res) => {
       },
       include: [{ 
         model: Category,
-        as: 'category',  // ✅ დამატებული
+        as: 'category',
         attributes: ['id', 'name']
       }],
       limit: 10
