@@ -1,6 +1,5 @@
 // backend/controllers/checkoutController.js
-const { Cart, Product, Order, OrderItem, User } = require('../models');
-const { sequelize } = require('../config/database');
+const { Cart, Product, Order, OrderItem, User, sequelize } = require('../models'); // ✅ ყველა models/index.js-დან!
 
 exports.getCheckoutData = async (req, res) => {
   try {
@@ -94,36 +93,35 @@ exports.processCheckout = async (req, res) => {
       payment_status: 'pending',
       payment_method: paymentMethod || 'cash_on_delivery',
       order_number: orderNumber,
-      shipping_address: shippingAddress, // JSON object directly
-      billing_address: shippingAddress   // Same address for billing
+      shipping_address: shippingAddress,
+      billing_address: shippingAddress
     };
 
-    console.log('Creating order with data:', orderData);
+    console.log('✅ Creating order with data:', orderData);
 
     const order = await Order.create(orderData, { transaction: t });
 
     // Create order items
-  // Create order items
-for (const cartItem of cartItems) {
-  const itemTotal = parseFloat(cartItem.product.price) * cartItem.quantity;  // აქ განვსაზღვრავთ
-  
-  await OrderItem.create({
-    order_id: order.id,
-    product_id: cartItem.product_id,
-    product_name: cartItem.product.name,
-    product_image: cartItem.product.image_url,
-    quantity: cartItem.quantity,
-    price: cartItem.product.price,
-    total: itemTotal  // და აქ ვიყენებთ
-  }, { transaction: t });
+    for (const cartItem of cartItems) {
+      const itemTotal = parseFloat(cartItem.product.price) * cartItem.quantity;
+      
+      await OrderItem.create({
+        order_id: order.id,
+        product_id: cartItem.product_id,
+        product_name: cartItem.product.name,
+        product_image: cartItem.product.image_url,
+        quantity: cartItem.quantity,
+        price: cartItem.product.price,
+        total: itemTotal
+      }, { transaction: t });
 
-  // Update product stock
-  await Product.decrement('stock', {
-    by: cartItem.quantity,
-    where: { id: cartItem.product_id },
-    transaction: t
-  });
-}
+      // Update product stock
+      await Product.decrement('stock', {
+        by: cartItem.quantity,
+        where: { id: cartItem.product_id },
+        transaction: t
+      });
+    }
 
     // Clear cart
     await Cart.destroy({
@@ -133,6 +131,8 @@ for (const cartItem of cartItems) {
 
     // Commit transaction
     await t.commit();
+
+    console.log('✅ Order created successfully:', orderNumber);
 
     res.json({
       success: true,
@@ -144,7 +144,7 @@ for (const cartItem of cartItems) {
     });
   } catch (error) {
     await t.rollback();
-    console.error('Process checkout error:', error);
+    console.error('❌ Process checkout error:', error);
     console.error('Error details:', error.message);
     
     res.status(500).json({
