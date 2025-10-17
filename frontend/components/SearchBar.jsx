@@ -14,22 +14,16 @@ const SearchBar = () => {
   const searchRef = useRef(null);
   const debounceRef = useRef(null);
 
-  // Debounce search to avoid too many API calls
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
+
+  // Debounce search
   useEffect(() => {
-    console.log('useEffect triggered, searchQuery:', searchQuery, 'length:', searchQuery.length); // Debug
-    
     if (searchQuery.trim().length >= 2) {
-      console.log('Search query is >= 2 characters, setting timeout'); // Debug
-      
-      // Clear previous timeout
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
-        console.log('Cleared previous timeout'); // Debug
       }
       
-      // Set new timeout
       debounceRef.current = setTimeout(() => {
-        console.log('Timeout executed, calling fetchSuggestions'); // Debug
         fetchSuggestions(searchQuery.trim());
       }, 300);
 
@@ -39,52 +33,42 @@ const SearchBar = () => {
         }
       };
     } else {
-      console.log('Search query too short, clearing suggestions'); // Debug
       setSuggestions([]);
       setShowSuggestions(false);
     }
   }, [searchQuery]);
 
   const fetchSuggestions = async (query) => {
-    console.log('🔍 Fetching suggestions for:', query); // Debug
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/products/search-suggestions?q=${encodeURIComponent(query)}`;
-      console.log('API URL:', url); // Debug
-      console.log('Environment API URL:', process.env.NEXT_PUBLIC_API_URL); // Debug
+      // ✅ Fixed: Use correct backend endpoint
+      const url = `${API_URL}/products/search?q=${encodeURIComponent(query)}`;
+      console.log('🔍 Fetching suggestions from:', url);
       
       const response = await fetch(url);
-      console.log('Response status:', response.status); // Debug
       
       if (response.ok) {
         const result = await response.json();
-        console.log('API Result:', result); // Debug
         if (result.success) {
-          console.log('Setting suggestions:', result.data); // Debug
-          setSuggestions(result.data);
+          console.log('✅ Found', result.data.length, 'products');
+          setSuggestions(result.data.slice(0, 5)); // Show max 5 suggestions
           setShowSuggestions(result.data.length > 0);
-        } else {
-          console.log('API returned success: false'); // Debug
         }
-      } else {
-        console.log('Response not ok:', response.status, response.statusText); // Debug
       }
     } catch (error) {
-      console.error('Search suggestions error:', error);
+      console.error('❌ Search error:', error);
     } finally {
       setLoading(false);
-      console.log('Loading set to false'); // Debug
     }
   };
 
   const handleSearch = (e, selectedSuggestion = null) => {
-    console.log('handleSearch called with:', selectedSuggestion); // Debug
     e.preventDefault();
     const query = selectedSuggestion || searchQuery.trim();
     
     if (query) {
-      console.log('Navigating to search with query:', query); // Debug
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      console.log('🔍 Searching for:', query);
+      router.push(`/products?search=${encodeURIComponent(query)}`);
       setSearchQuery('');
       setShowSuggestions(false);
       setSelectedIndex(-1);
@@ -92,11 +76,8 @@ const SearchBar = () => {
   };
 
   const handleKeyDown = (e) => {
-    console.log('Key pressed:', e.key); // Debug
-    
     if (!showSuggestions || suggestions.length === 0) {
       if (e.key === 'Enter') {
-        console.log('Enter pressed, no suggestions showing'); // Debug
         handleSearch(e);
       }
       return;
@@ -129,19 +110,16 @@ const SearchBar = () => {
   };
 
   const handleInputChange = (e) => {
-    console.log('Input changed:', e.target.value); // Debug
     setSearchQuery(e.target.value);
     setSelectedIndex(-1);
   };
 
   const handleSuggestionClick = (suggestion) => {
-    console.log('Suggestion clicked:', suggestion.name); // Debug
     const fakeEvent = { preventDefault: () => {} };
     handleSearch(fakeEvent, suggestion.name);
   };
 
   const handleInputFocus = () => {
-    console.log('Input focused, searchQuery:', searchQuery, 'suggestions:', suggestions.length); // Debug
     if (searchQuery.length >= 2 && suggestions.length > 0) {
       setShowSuggestions(true);
     }
@@ -151,7 +129,6 @@ const SearchBar = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        console.log('Clicked outside, closing suggestions'); // Debug
         setShowSuggestions(false);
         setSelectedIndex(-1);
       }
@@ -176,8 +153,6 @@ const SearchBar = () => {
     );
   };
 
-  console.log('Render - showSuggestions:', showSuggestions, 'suggestions.length:', suggestions.length); // Debug
-
   return (
     <div ref={searchRef} className="relative w-full max-w-md mx-4">
       <form onSubmit={handleSearch} className="relative">
@@ -188,7 +163,7 @@ const SearchBar = () => {
           onKeyDown={handleKeyDown}
           onFocus={handleInputFocus}
           placeholder="ძებნა..."
-          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
           autoComplete="off"
         />
         <button
@@ -207,9 +182,7 @@ const SearchBar = () => {
 
       {/* Suggestions Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div 
-          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
-        >
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
           {suggestions.map((suggestion, index) => (
             <div
               key={suggestion.id}
@@ -220,13 +193,13 @@ const SearchBar = () => {
                   : 'hover:bg-gray-50'
               }`}
             >
-              {suggestion.image && (
+              {suggestion.image_url && (
                 <img
-                  src={suggestion.image}
+                  src={suggestion.image_url}
                   alt={suggestion.name}
                   className="w-10 h-10 object-cover rounded-md flex-shrink-0"
                   onError={(e) => {
-                    e.target.style.display = 'none';
+                    e.target.src = '/placeholder-product.png';
                   }}
                 />
               )}
@@ -238,7 +211,7 @@ const SearchBar = () => {
                 
                 {suggestion.category && (
                   <div className="text-sm text-gray-500 truncate">
-                    {suggestion.category}
+                    {suggestion.category.name}
                   </div>
                 )}
                 

@@ -1,3 +1,4 @@
+// frontend/app/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,15 +11,13 @@ export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(null); // ✅ Changed: null instead of 'all'
   const [loading, setLoading] = useState(true);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Production API URL - Railway Backend
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ecommerce-production-3c82.up.railway.app/api';
 
-  // Debug logging
   useEffect(() => {
     console.log('🔍 Environment Check:');
     console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
@@ -102,11 +101,14 @@ export default function HomePage() {
       setLoading(true);
 
       let url = `${API_URL}/products?limit=8`;
-      if (selectedCategory !== 'all') {
-        url += `&category=${selectedCategory}`;
+      
+      // ✅ Fixed: Send category_id instead of category name
+      if (selectedCategory && selectedCategory !== 'all') {
+        url += `&category_id=${selectedCategory}`;
       }
 
       console.log('📡 Fetching products from:', url);
+      console.log('🏷️ Selected category ID:', selectedCategory);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -149,7 +151,7 @@ export default function HomePage() {
           const categoriesData = await categoriesRes.json();
           console.log('✅ Categories data:', categoriesData);
           setCategories([
-            { id: 'all', name: 'All', count: 0 },
+            { id: 'all', name: 'ყველა', count: 0 },
             ...(categoriesData.data || [])
           ]);
         } else {
@@ -177,9 +179,18 @@ export default function HomePage() {
     setCurrentSlide((prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length);
   };
 
+  // ✅ Helper function to get category name
+  const getCategoryName = () => {
+    if (!selectedCategory || selectedCategory === 'all') {
+      return 'ყველა პროდუქტი';
+    }
+    const category = categories.find(c => c.id === selectedCategory);
+    return category ? category.name : 'პროდუქტები';
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Featured Products Slider - Clean & Professional */}
+      {/* Featured Products Slider */}
       <div className="relative h-[650px] bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
         {featuredLoading ? (
           <div className="flex items-center justify-center h-full">
@@ -203,7 +214,6 @@ export default function HomePage() {
               >
                 <div className="h-full max-w-7xl mx-auto px-6 lg:px-8 flex items-center relative z-10">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 w-full items-center">
-
                     {/* Product Info */}
                     <div className="space-y-8 relative z-20 pointer-events-auto">
                       <div className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase">
@@ -323,8 +333,8 @@ export default function HomePage() {
                 <Truck className="w-6 h-6 text-slate-700" />
               </div>
               <div>
-                <h4 className="font-semibold text-slate-900 mb-1">უფასო მიწოდება თბილისში</h4>
-                <p className="text-sm text-slate-500">500₾-ზე მეტი შეკვეთისას</p>
+                <h4 className="font-semibold text-slate-900 mb-1">უფასო მიწოდება</h4>
+                <p className="text-sm text-slate-500">100₾-ზე მეტი შეკვეთისას</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -364,10 +374,13 @@ export default function HomePage() {
           {categories.map((category) => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id === 'all' ? 'all' : category.name)}
+              onClick={() => {
+                const categoryId = category.id === 'all' ? null : category.id;
+                console.log('🏷️ Category clicked:', category.name, 'ID:', categoryId);
+                setSelectedCategory(categoryId);
+              }}
               className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all ${
-                (category.id === 'all' && selectedCategory === 'all') ||
-                (category.name === selectedCategory)
+                selectedCategory === category.id || (selectedCategory === null && category.id === 'all')
                   ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
               }`}
@@ -383,7 +396,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pb-24">
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-2xl font-bold text-slate-900">
-            {selectedCategory === 'all' ? 'ყველა პროდუქტი' : selectedCategory}
+            {getCategoryName()}
           </h3>
           <Link href="/products">
             <button className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-1 group">
@@ -422,7 +435,7 @@ export default function HomePage() {
             <input
               type="email"
               placeholder="შენი ელ-ფოსტა"
-              className="flex-1 px-6 py-4 rounded-l-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-white"
+              className="flex-1 px-6 py-4 rounded-l-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-white placeholder:text-slate-500"
             />
             <button className="bg-white text-slate-900 px-8 py-4 rounded-r-lg font-semibold hover:bg-slate-50 transition">
               გამოწერა
