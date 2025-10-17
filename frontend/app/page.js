@@ -478,9 +478,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="border-t border-slate-200 mt-8 pt-8 text-center">
-            <p className="text-sm text-slate-400">© 2025 E-Shop. ყველა უფლება დაცულია</p>
-          </div>
         </div>
       </footer>
     </div>
