@@ -237,7 +237,7 @@ export default function CookieBanner() {
                   onClick={handleAcceptNecessary}
                   className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
                 >
-                  აუცილებელი მხოლოდ
+                 მხოლოდ აუცილებელი 
                 </button>
                 <button
                   onClick={() => setShowSettings(true)}
