@@ -8,6 +8,10 @@ import useCartStore from '@/store/useCartStore';
 import SearchBar from '@/components/SearchBar';
 import { ShoppingCart, Menu, X, User, LogOut, Package, Settings } from 'lucide-react';
 
+<Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700">
+  SmallMall {/* ✅ E-Commerce → SmallMall */}
+</Link>
+
 const Navbar = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
