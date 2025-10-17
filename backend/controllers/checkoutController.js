@@ -4,7 +4,7 @@ const { Cart, Product, Order, OrderItem, User, sequelize } = require('../models'
 exports.getCheckoutData = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     const cartItems = await Cart.findAll({
       where: { user_id: userId },
       include: [{
@@ -50,7 +50,7 @@ exports.getCheckoutData = async (req, res) => {
 
 exports.processCheckout = async (req, res) => {
   const t = await sequelize.transaction();
-  
+
   try {
     const userId = req.user.id;
     const { shippingAddress, paymentMethod, notes } = req.body;
@@ -104,12 +104,12 @@ exports.processCheckout = async (req, res) => {
     // Create order items
     for (const cartItem of cartItems) {
       const itemTotal = parseFloat(cartItem.product.price) * cartItem.quantity;
-      
+
       await OrderItem.create({
         order_id: order.id,
         product_id: cartItem.product_id,
         product_name: cartItem.product.name,
-        product_image: cartItem.product.image_url,
+        product_image: null,  // ✅ არ ვინახავთ სურათს!
         quantity: cartItem.quantity,
         price: cartItem.product.price,
         total: itemTotal
@@ -146,7 +146,7 @@ exports.processCheckout = async (req, res) => {
     await t.rollback();
     console.error('❌ Process checkout error:', error);
     console.error('Error details:', error.message);
-    
+
     res.status(500).json({
       success: false,
       message: 'შეკვეთის დამუშავება ვერ მოხერხდა',

@@ -1,15 +1,34 @@
 // backend/controllers/productController.js
-const { Product, Category } = require('../models');
+const { Product, Category, sequelize } = require('../models');
+const { cloudinary } = require('../middleware/upload');
 
 // Helper function to generate slug from name
 const generateSlug = (name) => {
   return name
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')      // Replace spaces with -
-    .replace(/-+/g, '-')       // Replace multiple - with single -
-    .substring(0, 50);         // Limit length
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50);
+};
+
+// Helper function to delete image from Cloudinary
+const deleteCloudinaryImage = async (imageUrl) => {
+  try {
+    if (imageUrl && imageUrl.includes('cloudinary.com')) {
+      // Extract public_id from Cloudinary URL
+      // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+      const parts = imageUrl.split('/');
+      const filename = parts[parts.length - 1];
+      const publicId = `ecommerce-products/${filename.split('.')[0]}`;
+      
+      await cloudinary.uploader.destroy(publicId);
+      console.log('🗑️ Deleted image from Cloudinary:', publicId);
+    }
+  } catch (error) {
+    console.error('❌ Error deleting image from Cloudinary:', error.message);
+  }
 };
 
 // @desc    Get all products
@@ -100,7 +119,7 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// @desc    Create product (supports up to 3 images)
+// @desc    Create product (supports up to 3 images via Cloudinary)
 // @route   POST /api/products
 exports.createProduct = async (req, res) => {
   try {
@@ -109,29 +128,23 @@ exports.createProduct = async (req, res) => {
     console.log('📦 Creating product:', name);
     console.log('📸 Files received:', req.files ? req.files.length : 0);
 
-    // ✅ Generate slug from name
+    // Generate slug from name
     const slug = generateSlug(name);
     console.log('🔗 Generated slug:', slug);
 
-    // Convert multiple images to Base64 array
+    // Get Cloudinary URLs from uploaded files
     let images = [];
     if (req.files && req.files.length > 0) {
-      console.log('📸 Converting images to Base64...');
-      
-      images = req.files.map(file => {
-        const base64Image = file.buffer.toString('base64');
-        return `data:${file.mimetype};base64,${base64Image}`;
-      });
-
-      console.log(`✅ ${images.length} images converted`);
+      images = req.files.map(file => file.path);
+      console.log(`✅ ${images.length} images uploaded to Cloudinary`);
     }
 
-    // For backward compatibility, keep first image in image_url
+    // First image as main image_url
     const image_url = images.length > 0 ? images[0] : null;
 
     const product = await Product.create({
       name,
-      slug,           // ✅ დამატებული!
+      slug,
       description,
       price,
       stock,
@@ -149,6 +162,14 @@ exports.createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Create product error:', error);
+    
+    // Delete uploaded images on error
+    if (req.files) {
+      for (const file of req.files) {
+        await deleteCloudinaryImage(file.path);
+      }
+    }
+    
     return res.status(500).json({
       success: false,
       message: 'Server error',
@@ -157,7 +178,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// @desc    Update product (supports up to 3 images)
+// @desc    Update product (supports up to 3 images via Cloudinary)
 // @route   PUT /api/products/:id
 exports.updateProduct = async (req, res) => {
   try {
@@ -175,7 +196,7 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // ✅ Generate new slug if name changed
+    // Generate new slug if name changed
     let slug = product.slug;
     if (name && name !== product.name) {
       slug = generateSlug(name);
@@ -186,23 +207,27 @@ exports.updateProduct = async (req, res) => {
     let images = product.images || [];
     let image_url = product.image_url;
 
-    // If new files uploaded, convert them to Base64
+    // If new files uploaded, replace old images
     if (req.files && req.files.length > 0) {
-      console.log(`📸 Converting ${req.files.length} new images to Base64...`);
+      console.log(`📸 Uploading ${req.files.length} new images to Cloudinary...`);
       
-      images = req.files.map(file => {
-        const base64Image = file.buffer.toString('base64');
-        return `data:${file.mimetype};base64,${base64Image}`;
-      });
+      // Delete old images from Cloudinary
+      if (product.images && Array.isArray(product.images)) {
+        for (const oldImage of product.images) {
+          await deleteCloudinaryImage(oldImage);
+        }
+      }
+      
+      // Get new Cloudinary URLs
+      images = req.files.map(file => file.path);
+      image_url = images[0];
 
-      image_url = images[0]; // Update main image
-
-      console.log(`✅ ${images.length} images converted`);
+      console.log(`✅ ${images.length} new images uploaded`);
     }
 
     await product.update({
       name,
-      slug,           // ✅ დამატებული!
+      slug,
       description,
       price,
       stock,
@@ -242,7 +267,17 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
+    // Delete images from Cloudinary
+    if (product.images && Array.isArray(product.images)) {
+      console.log(`🗑️ Deleting ${product.images.length} images from Cloudinary...`);
+      for (const imageUrl of product.images) {
+        await deleteCloudinaryImage(imageUrl);
+      }
+    }
+
     await product.destroy();
+
+    console.log('✅ Product deleted:', id);
 
     return res.json({
       success: true,

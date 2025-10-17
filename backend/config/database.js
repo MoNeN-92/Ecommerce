@@ -1,31 +1,25 @@
 // backend/config/database.js
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
 console.log('🔄 Loading database configuration...');
-
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  console.error('❌ DATABASE_URL is not set!');
-  process.exit(1);
-}
-
-console.log('✅ DATABASE_URL found');
-console.log('🔗 URL preview:', databaseUrl.substring(0, 30) + '...');
+console.log('Environment:', process.env.NODE_ENV);
 
 let sequelize;
 
-try {
-  // Direct Sequelize URL parsing (simplest method)
-  sequelize = new Sequelize(databaseUrl, {
+if (process.env.DATABASE_URL) {
+  // ✅ Production (Railway) - PostgreSQL URL
+  console.log('✅ Using DATABASE_URL (Production)');
+  
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
-    logging: false,
     dialectOptions: {
       ssl: {
         require: true,
         rejectUnauthorized: false
       }
     },
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
       max: 5,
       min: 0,
@@ -33,30 +27,56 @@ try {
       idle: 10000
     }
   });
+} else {
+  // ✅ Local Development - Individual credentials
+  console.log('✅ Using individual DB credentials (Local Development)');
+  
+  const dbConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'ecommerce_db',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'admin123'
+  };
 
-  console.log('✅ Sequelize instance created successfully');
+  console.log('Database Config:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.database,
+    username: dbConfig.username,
+    password: dbConfig.password ? '✓' : '✗'
+  });
 
-  // Test connection (non-blocking)
-  sequelize.authenticate()
-    .then(() => {
-      console.log('✅ Database connection test passed');
-    })
-    .catch((err) => {
-      console.error('❌ Database authentication failed:', err.message);
-    });
-
-} catch (error) {
-  console.error('❌ Failed to create Sequelize instance:', error.message);
-  console.error('Stack:', error.stack);
-  process.exit(1);
+  sequelize = new Sequelize(
+    dbConfig.database,
+    dbConfig.username,
+    dbConfig.password,
+    {
+      host: dbConfig.host,
+      port: dbConfig.port,
+      dialect: 'postgres',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    }
+  );
 }
 
-// Critical check before export
-if (!sequelize) {
-  console.error('❌ CRITICAL: sequelize is undefined before export!');
-  process.exit(1);
-}
+// Test connection
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Database connection established successfully');
+  } catch (error) {
+    console.error('❌ Unable to connect to database:', error.message);
+    process.exit(1);
+  }
+};
 
-console.log('✅ Exporting sequelize...');
+testConnection();
 
 module.exports = sequelize;
