@@ -131,12 +131,12 @@ console.log('✅ All model associations configured successfully');
 
 // Export all models
 module.exports = {
-    sequelize,
+  sequelize,
   User,
   Product,
   Category,
   Cart,
-  Order,      // ← უნდა იყოს აქ
-  OrderItem,  // ← და ეს
+  Order,
+  OrderItem,
   Review
 };
