@@ -163,7 +163,8 @@ exports.getAllOrders = async (req, res) => {
       order: [[sortBy, sortOrder]],
       limit: parseInt(limit),
       offset: parseInt(offset),
-      distinct: true
+      distinct: true,
+            subQuery: false  // ✅ CRITICAL FIX
     });
 
     const transformedRows = rows.map(order => {
