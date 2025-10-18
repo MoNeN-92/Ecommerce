@@ -29,7 +29,7 @@ exports.protect = async (req, res, next) => {
       });
     }
     
-    // ✅ CRITICAL FIX: Convert to plain object
+    // ✅ CRITICAL FIX: Convert Sequelize instance to plain object
     req.user = user.get({ plain: true });
     
     next();
