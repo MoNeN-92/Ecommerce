@@ -1,5 +1,5 @@
 // backend/controllers/userController.js
-const { User, Order, OrderItem, Product } = require('../models');
+const { User, Order, OrderItem, Product } = require('../models/index'); // ✅ Import from index.js
 const bcrypt = require('bcryptjs');
 
 const userController = {
@@ -39,7 +39,6 @@ const userController = {
     try {
       const userId = req.user.id;
       const { name, phone, first_name, last_name, address } = req.body;
-      // ❌ Email can't be changed (removed from updateable fields)
 
       // Find user
       const user = await User.findByPk(userId);
@@ -146,10 +145,12 @@ const userController = {
     }
   },
 
-  // Get user orders - FIXED to return array directly
+  // Get user orders - FIXED with proper imports and debugging
   getUserOrders: async (req, res) => {
     try {
       const userId = req.user.id;
+      
+      console.log('📦 getUserOrders called for user:', userId);
 
       const orders = await Order.findAll({
         where: { user_id: userId },
@@ -169,6 +170,8 @@ const userController = {
         order: [['created_at', 'DESC']]
       });
 
+      console.log(`✅ Found ${orders.length} orders for user ${userId}`);
+
       // Transform the response to match frontend expectations
       const formattedOrders = orders.map(order => ({
         id: order.id,
@@ -185,10 +188,10 @@ const userController = {
 
       res.json({
         success: true,
-        data: formattedOrders // ✅ Return array directly
+        data: formattedOrders
       });
     } catch (error) {
-      console.error('Get user orders error:', error);
+      console.error('❌ Get user orders error:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to get orders',
