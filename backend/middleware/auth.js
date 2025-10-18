@@ -29,14 +29,12 @@ exports.protect = async (req, res, next) => {
       });
     }
     
-    // ✅ CRITICAL FIX: Convert Sequelize instance to plain JavaScript object
+    // ✅ CRITICAL FIX: Convert to plain object
     req.user = user.get({ plain: true });
-    
-    console.log('✅ Auth middleware - User:', req.user.id, req.user.email); // დებაგინგისთვის
     
     next();
   } catch (error) {
-    console.error('❌ Auth error:', error);
+    console.error('❌ Auth middleware error:', error);
     return res.status(401).json({
       success: false,
       message: 'Not authorized to access this route'
@@ -45,8 +43,6 @@ exports.protect = async (req, res, next) => {
 };
 
 exports.admin = (req, res, next) => {
-  console.log('Admin check - user role:', req.user?.role);
-  
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
@@ -57,11 +53,9 @@ exports.admin = (req, res, next) => {
   }
 };
 
-// Aliases for compatibility
 exports.authenticateToken = exports.protect;
 exports.isAdmin = exports.admin;
 
-// Default exports
 module.exports = exports.protect;
 module.exports.protect = exports.protect;
 module.exports.admin = exports.admin;
