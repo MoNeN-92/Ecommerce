@@ -71,7 +71,7 @@ exports.getUserOrders = async (req, res) => {
       whereClause.status = status;
     }
     
-    const orders = await Order.findAll({
+    const { count, rows: orders } = await Order.findAndCountAll({
       where: whereClause,
       include: [
         {
@@ -81,12 +81,18 @@ exports.getUserOrders = async (req, res) => {
         },
         {
           model: OrderItem,
-          as: 'items'
+          as: 'items',
+          include: [{
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name', 'price', 'image_url']
+          }]
         }
       ],
       order: [['created_at', 'DESC']],
       limit: parseInt(limit),
-      offset: (parseInt(page) - 1) * parseInt(limit)
+      offset: (parseInt(page) - 1) * parseInt(limit),
+      distinct: true
     });
 
     const transformedOrders = orders.map(order => {
@@ -98,7 +104,13 @@ exports.getUserOrders = async (req, res) => {
 
     res.json({
       success: true,
-      data: transformedOrders
+      data: transformedOrders,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / parseInt(limit))
+      }
     });
   } catch (error) {
     console.error('Get user orders error:', error);
