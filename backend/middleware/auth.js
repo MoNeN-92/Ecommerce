@@ -18,12 +18,25 @@ exports.protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findByPk(decoded.id, {
+    const user = await User.findByPk(decoded.id, {
       attributes: ['id', 'name', 'email', 'role', 'phone', 'profile_image', 'avatar_url', 'created_at', 'updated_at']
     });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // ✅ CRITICAL FIX: Convert Sequelize instance to plain JavaScript object
+    req.user = user.get({ plain: true });
+    
+    console.log('✅ Auth middleware - User:', req.user.id, req.user.email); // დებაგინგისთვის
+    
     next();
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('❌ Auth error:', error);
     return res.status(401).json({
       success: false,
       message: 'Not authorized to access this route'
@@ -44,11 +57,11 @@ exports.admin = (req, res, next) => {
   }
 };
 
-// დაამატე aliases compatibility-სთვის
+// Aliases for compatibility
 exports.authenticateToken = exports.protect;
 exports.isAdmin = exports.admin;
 
-// ან default export
+// Default exports
 module.exports = exports.protect;
 module.exports.protect = exports.protect;
 module.exports.admin = exports.admin;
