@@ -13,36 +13,36 @@ const OAuthButtons = () => {
   const [error, setError] = useState('');
 
   // Handle Google Login
-  const handleGoogleSuccess = async (response) => {
+  const handleGoogleSuccess = (response) => {
     setLoading(true);
     setError('');
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          credential: response.credential
-        }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        credential: response.credential
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.setItem('token', data.token);
+          login(data.user);
+          router.push('/profile');
+        } else {
+          setError(data.message || 'Google login failed');
+        }
+      })
+      .catch(err => {
+        console.error('Google login error:', err);
+        setError('Google login failed. Please try again.');
+      })
+      .finally(() => {
+        setLoading(false);
       });
-
-      const data = await res.json();
-
-      if (data.success) {
-        localStorage.setItem('token', data.token);
-        login(data.user);
-        router.push('/profile');
-      } else {
-        setError(data.message || 'Google login failed');
-      }
-    } catch (err) {
-      console.error('Google login error:', err);
-      setError('Google login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Handle Facebook Login
