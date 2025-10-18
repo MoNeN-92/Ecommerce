@@ -1,8 +1,5 @@
 // backend/controllers/userController.js
-const User = require('../models/User');
-const  Order = require('../models/Order');
-const OrderItem = require('../models/OrderItem');
-const Product = require('../models/Product');
+const { User, Order, OrderItem, Product } = require('../models');
 const bcrypt = require('bcryptjs');
 
 const userController = {
@@ -41,52 +38,31 @@ const userController = {
   updateUserProfile: async (req, res) => {
     try {
       const userId = req.user.id;
-      const { name, email, phone, first_name, last_name, address } = req.body;
+      const { name, phone, first_name, last_name, address } = req.body;
+      // ❌ Email can't be changed (removed from updateable fields)
 
-      // Validate email uniqueness if it's being changed
-      if (email) {
-        const existingUser = await User.findOne({
-          where: { email },
-          attributes: ['id']
-        });
-
-        if (existingUser && existingUser.id !== userId) {
-          return res.status(400).json({
-            success: false,
-            message: 'Email already in use'
-          });
-        }
-      }
-
-      // Update user
-      const [updatedRows] = await User.update(
-        {
-          name: name || undefined,
-          email: email || undefined,
-          phone: phone || undefined,
-          first_name: first_name || undefined,
-          last_name: last_name || undefined,
-          address: address || undefined
-        },
-        {
-          where: { id: userId },
-          returning: true
-        }
-      );
-
-      if (updatedRows === 0) {
+      // Find user
+      const user = await User.findByPk(userId);
+      
+      if (!user) {
         return res.status(404).json({
           success: false,
           message: 'User not found'
         });
       }
 
-      // Get updated user data
-      const updatedUser = await User.findByPk(userId, {
-        attributes: {
-          exclude: ['password']
-        }
-      });
+      // Update only provided fields
+      if (name !== undefined) user.name = name;
+      if (first_name !== undefined) user.first_name = first_name;
+      if (last_name !== undefined) user.last_name = last_name;
+      if (phone !== undefined) user.phone = phone;
+      if (address !== undefined) user.address = address;
+
+      await user.save();
+
+      // Return updated user without password
+      const updatedUser = user.toJSON();
+      delete updatedUser.password;
 
       res.json({
         success: true,
@@ -132,6 +108,14 @@ const userController = {
         });
       }
 
+      // Check if user has password (OAuth users might not)
+      if (!user.password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot change password for OAuth accounts'
+        });
+      }
+
       // Verify current password
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isCurrentPasswordValid) {
@@ -146,10 +130,8 @@ const userController = {
       const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
       // Update password
-      await User.update(
-        { password: hashedNewPassword },
-        { where: { id: userId } }
-      );
+      user.password = hashedNewPassword;
+      await user.save();
 
       res.json({
         success: true,
@@ -164,57 +146,58 @@ const userController = {
     }
   },
 
-  // Get user orders (for profile page)
+  // Get user orders - FIXED to return array directly
   getUserOrders: async (req, res) => {
     try {
       const userId = req.user.id;
-      const { page = 1, limit = 10 } = req.query;
 
-      const offset = (page - 1) * limit;
-
-      const orders = await Order.findAndCountAll({
+      const orders = await Order.findAll({
         where: { user_id: userId },
         include: [
           {
             model: OrderItem,
+            as: 'items',
             include: [
               {
                 model: Product,
+                as: 'product',
                 attributes: ['id', 'name', 'image_url']
               }
             ]
           }
         ],
-        order: [['created_at', 'DESC']],
-        limit: parseInt(limit),
-        offset: parseInt(offset)
+        order: [['created_at', 'DESC']]
       });
 
-      const totalPages = Math.ceil(orders.count / limit);
+      // Transform the response to match frontend expectations
+      const formattedOrders = orders.map(order => ({
+        id: order.id,
+        order_number: order.order_number,
+        total_amount: order.total_amount,
+        status: order.status || 'pending',
+        payment_status: order.payment_status,
+        payment_method: order.payment_method,
+        shipping_address: order.shipping_address,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        items: order.items || []
+      }));
 
       res.json({
         success: true,
-        data: {
-          orders: orders.rows,
-          pagination: {
-            currentPage: parseInt(page),
-            totalPages,
-            totalOrders: orders.count,
-            hasNextPage: page < totalPages,
-            hasPrevPage: page > 1
-          }
-        }
+        data: formattedOrders // ✅ Return array directly
       });
     } catch (error) {
       console.error('Get user orders error:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to get orders'
+        message: 'Failed to get orders',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   },
 
-  // Upload profile image
+  // Upload profile image - CLOUDINARY VERSION
   uploadProfileImage: async (req, res) => {
     try {
       const userId = req.user.id;
@@ -226,24 +209,30 @@ const userController = {
         });
       }
 
-      // Update user with new image URL
-      const imageUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
+      // Cloudinary URL is in req.file.path (configured by multer-cloudinary)
+      const imageUrl = req.file.path;
       
-      await User.update(
-        { profile_image: imageUrl },
-        { where: { id: userId } }
-      );
+      // Update user profile image
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
 
-      // Get updated user
-      const updatedUser = await User.findByPk(userId, {
-        attributes: {
-          exclude: ['password']
-        }
-      });
+      user.profile_image = imageUrl;
+      await user.save();
+
+      // Return updated user without password
+      const updatedUser = user.toJSON();
+      delete updatedUser.password;
 
       res.json({
         success: true,
-        data: updatedUser,
+        data: {
+          profile_image: imageUrl
+        },
         message: 'Profile image updated successfully'
       });
     } catch (error) {
@@ -261,19 +250,29 @@ const userController = {
       const userId = req.user.id;
       const { password } = req.body;
 
-      if (!password) {
-        return res.status(400).json({
-          success: false,
-          message: 'Password is required to delete account'
-        });
-      }
-
       // Get user with password
       const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
           message: 'User not found'
+        });
+      }
+
+      // For OAuth users, skip password check
+      if (user.provider !== 'local') {
+        await user.destroy();
+        return res.json({
+          success: true,
+          message: 'Account deleted successfully'
+        });
+      }
+
+      // For local users, require password
+      if (!password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password is required to delete account'
         });
       }
 
@@ -286,8 +285,8 @@ const userController = {
         });
       }
 
-      // Delete user (this will cascade to related records if set up properly)
-      await User.destroy({ where: { id: userId } });
+      // Delete user
+      await user.destroy();
 
       res.json({
         success: true,
