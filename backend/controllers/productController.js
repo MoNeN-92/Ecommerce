@@ -30,6 +30,43 @@ const deleteCloudinaryImage = async (imageUrl) => {
   }
 };
 
+// 🆕 Helper function - ფასდაკლების ვალიდაცია
+const validateDiscount = (discount_type, discount_value, price) => {
+  if (!discount_type || discount_type === 'none') {
+    return { valid: true };
+  }
+
+  const discountNum = parseFloat(discount_value);
+  const priceNum = parseFloat(price);
+
+  if (isNaN(discountNum) || discountNum < 0) {
+    return { 
+      valid: false, 
+      message: 'ფასდაკლება უნდა იყოს დადებითი რიცხვი' 
+    };
+  }
+
+  if (discount_type === 'percentage') {
+    if (discountNum > 100) {
+      return { 
+        valid: false, 
+        message: 'პროცენტული ფასდაკლება არ შეიძლება იყოს 100%-ზე მეტი' 
+      };
+    }
+  }
+
+  if (discount_type === 'fixed') {
+    if (discountNum > priceNum) {
+      return { 
+        valid: false, 
+        message: 'ფასდაკლება არ შეიძლება იყოს პროდუქტის ფასზე მეტი' 
+      };
+    }
+  }
+
+  return { valid: true };
+};
+
 // @desc    Get all products with optional filtering
 // @route   GET /api/products?category_id=1&search=query&limit=10
 exports.getAllProducts = async (req, res) => {
@@ -147,9 +184,29 @@ exports.getProductById = async (req, res) => {
 // @route   POST /api/products
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, category_id, is_featured } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      stock, 
+      category_id, 
+      is_featured,
+      discount_type = 'none',
+      discount_value = 0
+    } = req.body;
 
     console.log('📦 Creating product:', name);
+    console.log('💰 Price:', price, '| Discount:', discount_type, discount_value);
+
+    // 🆕 ფასდაკლების ვალიდაცია
+    const discountValidation = validateDiscount(discount_type, discount_value, price);
+    if (!discountValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: discountValidation.message
+      });
+    }
+
     console.log('📸 Files received:', req.files ? req.files.length : 0);
 
     const slug = generateSlug(name);
@@ -172,7 +229,9 @@ exports.createProduct = async (req, res) => {
       category_id,
       image_url,
       images,
-      is_featured: is_featured || false
+      is_featured: is_featured || false,
+      discount_type: discount_type || 'none',
+      discount_value: discount_value || 0
     });
 
     console.log('✅ Product created:', product.id);
@@ -203,7 +262,16 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, category_id, is_featured } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      stock, 
+      category_id, 
+      is_featured,
+      discount_type,
+      discount_value
+    } = req.body;
 
     console.log('📝 Updating product:', id);
 
@@ -213,6 +281,19 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
+      });
+    }
+
+    // 🆕 ფასდაკლების ვალიდაცია (თუ იცვლება)
+    const newPrice = price !== undefined ? price : product.price;
+    const newDiscountType = discount_type !== undefined ? discount_type : product.discount_type;
+    const newDiscountValue = discount_value !== undefined ? discount_value : product.discount_value;
+
+    const discountValidation = validateDiscount(newDiscountType, newDiscountValue, newPrice);
+    if (!discountValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: discountValidation.message
       });
     }
 
@@ -241,18 +322,21 @@ exports.updateProduct = async (req, res) => {
     }
 
     await product.update({
-      name,
+      name: name !== undefined ? name : product.name,
       slug,
-      description,
-      price,
-      stock,
-      category_id,
+      description: description !== undefined ? description : product.description,
+      price: newPrice,
+      stock: stock !== undefined ? stock : product.stock,
+      category_id: category_id !== undefined ? category_id : product.category_id,
       image_url,
       images,
-      is_featured: is_featured !== undefined ? is_featured : product.is_featured
+      is_featured: is_featured !== undefined ? is_featured : product.is_featured,
+      discount_type: newDiscountType,
+      discount_value: newDiscountValue
     });
 
     console.log('✅ Product updated:', id);
+    console.log('💰 New discount:', newDiscountType, newDiscountValue);
 
     return res.json({
       success: true,

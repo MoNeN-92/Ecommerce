@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, Loader2, Save, X, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, Save, X, Trash2, Plus, Percent } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -24,7 +24,10 @@ function EditProductContent({ params }) {
     price: '',
     stock: '',
     category_id: '',
-    is_featured: false
+    is_featured: false,
+    // 🆕 ფასდაკლების ველები
+    discount_type: 'none',
+    discount_value: 0
   });
   const [errors, setErrors] = useState({});
 
@@ -55,7 +58,9 @@ function EditProductContent({ params }) {
         price: product.price || '',
         stock: product.stock || '',
         category_id: product.category_id || '',
-        is_featured: product.is_featured || false
+        is_featured: product.is_featured || false,
+        discount_type: product.discount_type || 'none',
+        discount_value: product.discount_value || 0
       });
 
       // 🔥 Load existing images
@@ -114,6 +119,26 @@ function EditProductContent({ params }) {
     }
   };
 
+  // 🆕 ფასდაკლებული ფასის გამოთვლა
+  const calculateDiscountedPrice = () => {
+    const price = parseFloat(formData.price) || 0;
+    const discountValue = parseFloat(formData.discount_value) || 0;
+
+    if (formData.discount_type === 'none' || discountValue === 0) {
+      return price;
+    }
+
+    if (formData.discount_type === 'percentage') {
+      return price - (price * discountValue / 100);
+    }
+
+    if (formData.discount_type === 'fixed') {
+      return Math.max(0, price - discountValue);
+    }
+
+    return price;
+  };
+
   // 🔥 Remove existing image
   const removeExistingImage = (index) => {
     const newImages = existingImages.filter((_, i) => i !== index);
@@ -167,6 +192,19 @@ function EditProductContent({ params }) {
       newErrors.category_id = 'Category is required';
     }
 
+    // 🆕 ფასდაკლების ვალიდაცია
+    if (formData.discount_type === 'percentage') {
+      if (formData.discount_value < 0 || formData.discount_value > 100) {
+        newErrors.discount_value = 'Percentage must be between 0-100';
+      }
+    }
+
+    if (formData.discount_type === 'fixed') {
+      if (formData.discount_value > parseFloat(formData.price)) {
+        newErrors.discount_value = 'Discount cannot exceed product price';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -194,6 +232,10 @@ function EditProductContent({ params }) {
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('is_featured', formData.is_featured);
 
+      // 🆕 ფასდაკლების ველები
+      formDataToSend.append('discount_type', formData.discount_type);
+      formDataToSend.append('discount_value', formData.discount_value);
+
       // 🔥 Add existing images as JSON
       formDataToSend.append('images', JSON.stringify(existingImages));
 
@@ -203,6 +245,7 @@ function EditProductContent({ params }) {
       });
 
       console.log('Updating with:', existingImages.length, 'existing +', newFiles.length, 'new images');
+      console.log('Discount:', formData.discount_type, formData.discount_value);
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${resolvedParams.id}`, {
         method: 'PUT',
@@ -240,6 +283,8 @@ function EditProductContent({ params }) {
 
   const totalImages = existingImages.length + newFiles.length;
   const canAddMore = totalImages < 3;
+  const discountedPrice = calculateDiscountedPrice();
+  const hasDiscount = formData.discount_type !== 'none' && parseFloat(formData.discount_value) > 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -334,6 +379,95 @@ function EditProductContent({ params }) {
                   <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
                 )}
               </div>
+            </div>
+
+            {/* 🆕 DISCOUNT SECTION */}
+            <div className="border-t border-b py-6 bg-yellow-50 -mx-6 px-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">💰</span>
+                Discount Settings (ფასდაკლება)
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Type
+                  </label>
+                  <select
+                    name="discount_type"
+                    value={formData.discount_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    <option value="none">No Discount</option>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (₾)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Value
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      name="discount_value"
+                      step="0.01"
+                      value={formData.discount_value}
+                      onChange={handleChange}
+                      disabled={formData.discount_type === 'none'}
+                      className={`w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.discount_value ? 'border-red-500' : 'border-gray-300'
+                      } ${formData.discount_type === 'none' ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      placeholder={formData.discount_type === 'percentage' ? '10' : '5.00'}
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      {formData.discount_type === 'percentage' ? (
+                        <Percent className="w-5 h-5 text-gray-400" />
+                      ) : formData.discount_type === 'fixed' ? (
+                        <span className="text-gray-400 font-semibold">₾</span>
+                      ) : null}
+                    </div>
+                  </div>
+                  {errors.discount_value && (
+                    <p className="mt-1 text-sm text-red-600">{errors.discount_value}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* 🆕 Price Preview */}
+              {formData.price > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Price Preview:</p>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {hasDiscount ? (
+                      <>
+                        <div>
+                          <span className="text-gray-500 line-through text-lg">
+                            ₾{parseFloat(formData.price).toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-2xl font-bold text-green-600">
+                            ₾{discountedPrice.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {formData.discount_type === 'percentage' 
+                            ? `-${formData.discount_value}%`
+                            : `-₾${formData.discount_value}`
+                          }
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-2xl font-bold text-gray-900">
+                        ₾{parseFloat(formData.price).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Category */}

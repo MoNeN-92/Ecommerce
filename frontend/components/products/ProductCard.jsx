@@ -1,11 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Tag } from 'lucide-react';
 import useCartStore from '@/store/useCartStore';
 
 export default function ProductCard({ product }) {
-  const { id, name, description, price, image_url, images, stock } = product;
+  const { 
+    id, 
+    name, 
+    description, 
+    price, 
+    image_url, 
+    images, 
+    stock,
+    // 🆕 ფასდაკლების ველები
+    discount_type,
+    discount_value,
+    has_discount,
+    discounted_price,
+    original_price
+  } = product;
+  
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = (e) => {
@@ -13,26 +28,19 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     
     addItem(product, 1);
-    
-    // Force navbar update without alert
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
-  // Get the image URL from either images array or image_url field
   const getImageUrl = () => {
-    // Check if images array exists and has items
     if (images && Array.isArray(images) && images.length > 0) {
       return images[0];
     }
     
-    // Otherwise use image_url field
     if (image_url) {
-      // If it's already a full URL, return as is
       if (image_url.startsWith('http://') || image_url.startsWith('https://')) {
         return image_url;
       }
       
-      // If it's a relative path, add the backend URL
       if (image_url.startsWith('/uploads/')) {
         return `http://localhost:5000${image_url}`;
       }
@@ -43,12 +51,42 @@ export default function ProductCard({ product }) {
     return null;
   };
 
+  // 🆕 ფასდაკლების პროცენტის გამოთვლა display-სთვის
+  const getDiscountBadgeText = () => {
+    if (!has_discount) return null;
+    
+    if (discount_type === 'percentage') {
+      return `-${discount_value}%`;
+    }
+    
+    if (discount_type === 'fixed') {
+      return `-₾${parseFloat(discount_value).toFixed(0)}`;
+    }
+    
+    return null;
+  };
+
   const displayImage = getImageUrl();
+  const badgeText = getDiscountBadgeText();
+  
+  // 🆕 გამოსაჩენი ფასები
+  const finalPrice = has_discount ? discounted_price : (price || original_price);
+  const showOriginalPrice = has_discount && original_price;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition relative">
+      {/* 🆕 Discount Badge */}
+      {has_discount && badgeText && (
+        <div className="absolute top-3 right-3 z-10">
+          <div className="bg-red-500 text-white px-3 py-1.5 rounded-full font-bold text-sm shadow-lg flex items-center gap-1">
+            <Tag className="w-4 h-4" />
+            {badgeText}
+          </div>
+        </div>
+      )}
+
       <Link href={`/products/${id}`}>
-        <div className="h-48 bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer">
+        <div className="h-48 bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer relative">
           {displayImage ? (
             <img 
               src={displayImage} 
@@ -56,7 +94,7 @@ export default function ProductCard({ product }) {
               className="w-full h-full object-cover hover:scale-105 transition duration-300"
               onError={(e) => {
                 console.log(`Image failed to load for product ${id}:`, displayImage);
-                e.target.onerror = null; // Prevent infinite loop
+                e.target.onerror = null;
                 e.target.src = '/placeholder-product.png';
               }}
             />
@@ -84,22 +122,38 @@ export default function ProductCard({ product }) {
           {description || 'No description available'}
         </p>
         
+        {/* 🆕 Price Section with Discount */}
+        <div className="mb-3">
+          {has_discount ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* ძველი ფასი გადახაზული */}
+              <span className="text-gray-500 line-through text-base">
+                ₾{parseFloat(showOriginalPrice || price).toFixed(2)}
+              </span>
+              {/* ახალი ფასდაკლებული ფასი */}
+              <span className="text-2xl font-bold text-green-600">
+                ₾{parseFloat(finalPrice).toFixed(2)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xl font-bold text-blue-600">
+              ₾{parseFloat(finalPrice).toFixed(2)}
+            </span>
+          )}
+        </div>
+
         <div className="flex justify-between items-center">
-          <span className="text-xl font-bold text-blue-600">
-            ₾{parseFloat(price).toFixed(2)}
-          </span>
-          
           <button 
             onClick={handleAddToCart}
             disabled={stock === 0}
-            className={`px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
+            className={`flex-1 mr-2 px-4 py-2 rounded-lg transition text-sm flex items-center justify-center gap-1 ${
               stock > 0 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
             <ShoppingCart className="w-4 h-4" />
-            {stock > 0 ? 'Add' : 'Out of Stock'}
+            {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
           </button>
         </div>
         
