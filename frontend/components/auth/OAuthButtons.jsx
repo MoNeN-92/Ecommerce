@@ -1,16 +1,86 @@
-// frontend/components/auth/OAuthButtons.jsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import Script from 'next/script';
 
 const OAuthButtons = () => {
   const { login } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fbLoaded, setFbLoaded] = useState(false);
+
+  // Initialize Google
+  useEffect(() => {
+    // Load Google SDK
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          callback: handleGoogleSuccess,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        
+        window.google.accounts.id.renderButton(
+          document.getElementById('google-signin-button'),
+          { 
+            theme: 'outline',
+            size: 'large',
+            width: 400,
+            text: 'signin_with',
+            locale: 'ka'
+          }
+        );
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
+  // ✅ Initialize Facebook SDK
+  useEffect(() => {
+    // Prevent double loading
+    if (window.FB || document.getElementById('facebook-jssdk')) {
+      setFbLoaded(true);
+      return;
+    }
+
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
+        cookie: true,
+        xfbml: true,
+        version: 'v21.0'  // ✅ Latest version
+      });
+      setFbLoaded(true);
+      console.log('✅ Facebook SDK v21.0 initialized');
+    };
+
+    // Load Facebook SDK
+    const script = document.createElement('script');
+    script.id = 'facebook-jssdk';
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   // Handle Google Login
   const handleGoogleSuccess = (response) => {
@@ -19,12 +89,8 @@ const OAuthButtons = () => {
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        credential: response.credential
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
     })
       .then(res => res.json())
       .then(data => {
@@ -39,30 +105,24 @@ const OAuthButtons = () => {
         console.error('Google login error:', err);
         setError('Google login failed. Please try again.');
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
-  // ✅ FIXED: Handle Facebook Login - removed async from callback
+  // Handle Facebook Login
   const handleFacebookLogin = () => {
-    setLoading(true);
-    setError('');
-
     if (!window.FB) {
-      setError('Facebook SDK not loaded');
-      setLoading(false);
+      setError('Facebook SDK not loaded yet. Please try again.');
       return;
     }
 
-    window.FB.login((response) => {  // ✅ Removed async here
+    setLoading(true);
+    setError('');
+
+    window.FB.login((response) => {
       if (response.authResponse) {
-        // Use Promise instead of async/await
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/facebook`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             accessToken: response.authResponse.accessToken,
             userID: response.authResponse.userID
@@ -90,104 +150,47 @@ const OAuthButtons = () => {
     }, { scope: 'email,public_profile' });
   };
 
-  // Initialize Google
-  const initializeGoogle = () => {
-    if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        callback: handleGoogleSuccess,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        itp_support: true,
-      });
-      
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { 
-          theme: 'outline',
-          size: 'large',
-          width: 400,
-          text: 'signin_with',
-          locale: 'ka'
-        }
-      );
-    }
-  };
-
-  // ✅ FIXED: Initialize Facebook - better error handling
-  const initializeFacebook = () => {
-    if (window.FB) {
-      // Already initialized
-      return;
-    }
-
-    window.fbAsyncInit = function() {
-      window.FB.init({
-        appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
-        cookie: true,
-        xfbml: true,
-        version: 'v18.0'
-      });
-      
-      console.log('✅ Facebook SDK initialized');
-    };
-  };
-
   return (
-    <>
-      {/* Load OAuth Scripts */}
-      <Script 
-        src="https://accounts.google.com/gsi/client"
-        onLoad={initializeGoogle}
-        strategy="afterInteractive"
-      />
-      <Script 
-        src="https://connect.facebook.net/en_US/sdk.js"
-        onLoad={initializeFacebook}
-        strategy="afterInteractive"
-      />
-
-      <div className="space-y-3">
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">ან გაგრძელეთ</span>
-          </div>
+    <div className="space-y-3">
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-gray-300" />
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Google Login Button */}
-        <div id="google-signin-button" className="w-full"></div>
-
-        {/* Facebook Login Button */}
-        <button
-          type="button"
-          onClick={handleFacebookLogin}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-[#1877F2] text-white rounded-lg hover:bg-[#1665D8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              <span className="font-medium">შესვლა Facebook-ით</span>
-            </>
-          )}
-        </button>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-gray-500">ან გაგრძელეთ</span>
+        </div>
       </div>
-    </>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Google Login Button */}
+      <div id="google-signin-button" className="w-full"></div>
+
+      {/* Facebook Login Button */}
+      <button
+        type="button"
+        onClick={handleFacebookLogin}
+        disabled={loading || !fbLoaded}
+        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-[#1877F2] text-white rounded-lg hover:bg-[#1665D8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <>
+            <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span className="font-medium">შესვლა Facebook-ით</span>
+          </>
+        )}
+      </button>
+    </div>
   );
 };
 
