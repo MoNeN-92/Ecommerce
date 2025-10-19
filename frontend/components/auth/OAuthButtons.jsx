@@ -30,8 +30,6 @@ const OAuthButtons = () => {
       .then(data => {
         if (data.success) {
           localStorage.setItem('token', data.token);
-          // Don't call login() - it expects email/password, not user object
-          // Instead, the page will refresh and checkAuthStatus will load the user
           window.location.href = '/profile';
         } else {
           setError(data.message || 'Google login failed');
@@ -46,43 +44,49 @@ const OAuthButtons = () => {
       });
   };
 
-  // Handle Facebook Login
+  // ✅ FIXED: Handle Facebook Login - removed async from callback
   const handleFacebookLogin = () => {
     setLoading(true);
     setError('');
 
-    window.FB.login(async (response) => {
+    if (!window.FB) {
+      setError('Facebook SDK not loaded');
+      setLoading(false);
+      return;
+    }
+
+    window.FB.login((response) => {  // ✅ Removed async here
       if (response.authResponse) {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/facebook`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              accessToken: response.authResponse.accessToken,
-              userID: response.authResponse.userID
-            }),
+        // Use Promise instead of async/await
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/facebook`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accessToken: response.authResponse.accessToken,
+            userID: response.authResponse.userID
+          }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              localStorage.setItem('token', data.token);
+              window.location.href = '/profile';
+            } else {
+              setError(data.message || 'Facebook login failed');
+              setLoading(false);
+            }
+          })
+          .catch(err => {
+            console.error('Facebook login error:', err);
+            setError('Facebook login failed. Please try again.');
+            setLoading(false);
           });
-
-          const data = await res.json();
-
-          if (data.success) {
-            localStorage.setItem('token', data.token);
-            // Don't call login() - it expects email/password, not user object
-            // Instead, redirect and let checkAuthStatus load the user
-            window.location.href = '/profile';
-          } else {
-            setError(data.message || 'Facebook login failed');
-          }
-        } catch (err) {
-          console.error('Facebook login error:', err);
-          setError('Facebook login failed. Please try again.');
-        }
       } else {
         setError('Facebook login cancelled');
+        setLoading(false);
       }
-      setLoading(false);
     }, { scope: 'email,public_profile' });
   };
 
@@ -97,7 +101,6 @@ const OAuthButtons = () => {
         itp_support: true,
       });
       
-      // Render the button instead of using prompt
       window.google.accounts.id.renderButton(
         document.getElementById('google-signin-button'),
         { 
@@ -111,8 +114,13 @@ const OAuthButtons = () => {
     }
   };
 
-  // Initialize Facebook
+  // ✅ FIXED: Initialize Facebook - better error handling
   const initializeFacebook = () => {
+    if (window.FB) {
+      // Already initialized
+      return;
+    }
+
     window.fbAsyncInit = function() {
       window.FB.init({
         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
@@ -120,6 +128,8 @@ const OAuthButtons = () => {
         xfbml: true,
         version: 'v18.0'
       });
+      
+      console.log('✅ Facebook SDK initialized');
     };
   };
 
@@ -155,7 +165,7 @@ const OAuthButtons = () => {
           </div>
         )}
 
-        {/* Google Login Button - Will be replaced by Google's button */}
+        {/* Google Login Button */}
         <div id="google-signin-button" className="w-full"></div>
 
         {/* Facebook Login Button */}
@@ -169,7 +179,6 @@ const OAuthButtons = () => {
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              {/* Facebook "f" SVG Icon */}
               <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
