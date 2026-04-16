@@ -39,6 +39,27 @@ const emptyState = {
 type ProductFormState = typeof emptyState;
 type SpecRow = { key: string; value: string };
 
+function buildInitialFormState(product?: any): ProductFormState {
+  if (!product) {
+    return emptyState;
+  }
+
+  const salePrice = Number(product.price ?? 0);
+  const originalPrice =
+    product.compareAtPrice && Number(product.compareAtPrice) > salePrice
+      ? Number(product.compareAtPrice)
+      : salePrice;
+
+  return {
+    ...product,
+    price: originalPrice,
+    compareAtPrice: Number(product.compareAtPrice ?? 0),
+    images: product.images ?? [],
+    metaKeywords: Array.isArray(product.metaKeywords) ? product.metaKeywords.join(", ") : "",
+    specs: JSON.stringify(product.specs ?? {}, null, 2)
+  };
+}
+
 function buildInitialDiscount(product?: any) {
   if (!product?.compareAtPrice || Number(product.compareAtPrice) <= Number(product.price)) {
     return { enabled: false, mode: "percent", value: "" };
@@ -82,7 +103,7 @@ export function ProductForm({
           nameKa: "მაგ: iPhone 15 Pro 256GB",
           nameEn: "მაგ: iPhone 15 Pro 256GB",
           brand: "მაგ: Apple",
-          sellingPrice: "მაგ: 3799",
+          sellingPrice: "მაგ: 3999",
           stock: "მაგ: 12",
           keywords: "მაგ: iphone, apple, smartphone, 256gb",
           imageUrl: "https://...",
@@ -101,7 +122,7 @@ export function ProductForm({
           nameKa: "e.g. iPhone 15 Pro 256GB",
           nameEn: "e.g. iPhone 15 Pro 256GB",
           brand: "e.g. Apple",
-          sellingPrice: "e.g. 3799",
+          sellingPrice: "e.g. 3999",
           stock: "e.g. 12",
           keywords: "e.g. iphone, apple, smartphone, 256gb",
           imageUrl: "https://...",
@@ -115,14 +136,7 @@ export function ProductForm({
           specsValue: "e.g. 6.1-inch OLED"
         };
   const [form, setForm] = useState(
-    product
-      ? {
-          ...product,
-          images: product.images,
-          metaKeywords: product.metaKeywords.join(", "),
-          specs: JSON.stringify(product.specs, null, 2)
-        }
-      : emptyState
+    buildInitialFormState(product)
   );
   const [discount, setDiscount] = useState(buildInitialDiscount(product));
   const [specRows, setSpecRows] = useState<SpecRow[]>(buildInitialSpecs(product));
@@ -156,21 +170,57 @@ export function ProductForm({
     setForm((current: ProductFormState) => (current.sku === nextSku ? current : { ...current, sku: nextSku }));
   }, [form.brand, form.nameEn, form.nameKa]);
 
-  const computedCompareAtPrice = useMemo(() => {
-    const salePrice = Number(form.price);
+  const pricingPreview = useMemo(() => {
+    const basePrice = Number(form.price);
     const discountValue = Number(discount.value);
 
-    if (!discount.enabled || !salePrice || !discountValue) {
-      return null;
+    if (!basePrice) {
+      return {
+        originalPrice: 0,
+        finalPrice: 0,
+        compareAtPrice: null as number | null
+      };
+    }
+
+    if (!discount.enabled || !discountValue) {
+      return {
+        originalPrice: basePrice,
+        finalPrice: basePrice,
+        compareAtPrice: null as number | null
+      };
     }
 
     if (discount.mode === "percent") {
-      if (discountValue <= 0 || discountValue >= 100) return null;
-      return Number((salePrice / (1 - discountValue / 100)).toFixed(2));
+      if (discountValue <= 0 || discountValue >= 100) {
+        return {
+          originalPrice: basePrice,
+          finalPrice: basePrice,
+          compareAtPrice: null as number | null
+        };
+      }
+
+      const finalPrice = Number((basePrice * (1 - discountValue / 100)).toFixed(2));
+      return {
+        originalPrice: basePrice,
+        finalPrice,
+        compareAtPrice: finalPrice < basePrice ? basePrice : null
+      };
     }
 
-    if (discountValue <= 0) return null;
-    return Number((salePrice + discountValue).toFixed(2));
+    if (discountValue <= 0 || discountValue >= basePrice) {
+      return {
+        originalPrice: basePrice,
+        finalPrice: basePrice,
+        compareAtPrice: null as number | null
+      };
+    }
+
+    const finalPrice = Number((basePrice - discountValue).toFixed(2));
+    return {
+      originalPrice: basePrice,
+      finalPrice,
+      compareAtPrice: finalPrice < basePrice ? basePrice : null
+    };
   }, [discount, form.price]);
 
   const uploadFiles = async (files: FileList | null) => {
@@ -283,8 +333,8 @@ export function ProductForm({
       seoDescriptionKa: form.seoDescriptionKa?.trim() || null,
       seoDescriptionEn: form.seoDescriptionEn?.trim() || null,
       brand: form.brand.trim(),
-      price: Number(form.price),
-      compareAtPrice: discount.enabled ? computedCompareAtPrice : null,
+      price: pricingPreview.finalPrice,
+      compareAtPrice: discount.enabled ? pricingPreview.compareAtPrice : null,
       stock: Number(form.stock),
       images: form.images,
       metaKeywords: String(form.metaKeywords)
@@ -356,8 +406,8 @@ export function ProductForm({
       <p className="-mt-1 text-xs text-slate-500">
         {messages.productForm.skuHelp}{" "}
         {locale === "ka"
-          ? "ფასის ძირითადი ველი არის `სარეალიზაციო ფასი`."
-          : "The main price field is `Selling price`."}
+          ? "აქ შეიყვანეთ ძირითადი ფასი, ხოლო ფასდაკლება ქვემოთ დაითვლის საბოლოო გასაყიდ ფასს."
+          : "Enter the base price here, then use the discount block below to calculate the final sale price."}
       </p>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <label className="flex items-center gap-3 rounded-2xl border border-border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
@@ -482,8 +532,8 @@ export function ProductForm({
               onChange={(event) => setDiscount((current) => ({ ...current, value: event.target.value }))}
             />
             <div className="rounded-2xl border border-black/[0.06] bg-white px-4 py-3 text-sm text-slate-700">
-              {computedCompareAtPrice
-                ? `${messages.productForm.originalPrice}: ${computedCompareAtPrice.toFixed(2)} GEL`
+              {pricingPreview.compareAtPrice
+                ? `${messages.productForm.originalPrice}: ${pricingPreview.originalPrice.toFixed(2)} GEL | ${messages.productForm.finalPrice}: ${pricingPreview.finalPrice.toFixed(2)} GEL`
                 : messages.productForm.invalidDiscount}
             </div>
           </div>
