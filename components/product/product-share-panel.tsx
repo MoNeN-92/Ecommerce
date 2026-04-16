@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, Link2, MessageCircleMore } from "lucide-react";
+import { Check, Copy, Link2, MessageCircleMore, Share2 } from "lucide-react";
 
 type ProductSharePanelProps = {
   locale: "ka" | "en";
@@ -12,13 +12,52 @@ type ProductSharePanelProps = {
 export function ProductSharePanel({ locale, title, url }: ProductSharePanelProps) {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState(url);
+  const [supportsNativeShare, setSupportsNativeShare] = useState(false);
 
   useEffect(() => {
     setShareUrl(window.location.href);
+    setSupportsNativeShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
   }, []);
 
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title} ${shareUrl}`)}`;
+
+  async function handleNativeShare() {
+    if (typeof navigator === "undefined" || typeof navigator.share !== "function") {
+      window.open(facebookUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title,
+        text: title,
+        url: shareUrl
+      });
+    } catch {
+      // Ignore cancel and keep fallback links available.
+    }
+  }
+
+  function handleWhatsAppShare() {
+    const appUrl = `whatsapp://send?text=${encodeURIComponent(`${title} ${shareUrl}`)}`;
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const fallbackTimer = window.setTimeout(() => {
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    }, 900);
+
+    const stopFallback = () => {
+      window.clearTimeout(fallbackTimer);
+      document.removeEventListener("visibilitychange", stopFallback);
+    };
+
+    document.addEventListener("visibilitychange", stopFallback);
+    window.location.href = appUrl;
+  }
 
   async function handleCopy() {
     try {
@@ -42,11 +81,25 @@ export function ProductSharePanel({ locale, title, url }: ProductSharePanelProps
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-7 text-slate-600">
             {locale === "ka"
-              ? "Facebook-ზე ან მესენჯერებში გაგზავნისთვის გამოიყენეთ სწრაფი ბმულები."
-              : "Use quick share links for Facebook and messaging apps."}
+              ? "თუ მოწყობილობაზე აპლიკაცია გაქვთ, გაზიარება პირველ რიგში აპებში გაიხსნება. სხვა შემთხვევაში შეგიძლიათ გამოიყენოთ სწრაფი ბმულები."
+              : "If sharing apps are installed on your device, the native share sheet will use them first. Otherwise, use the quick links below."}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleNativeShare}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            <Share2 className="h-4 w-4" />
+            {supportsNativeShare
+              ? locale === "ka"
+                ? "გაზიარება აპებში"
+                : "Share via apps"
+              : locale === "ka"
+                ? "გაზიარება"
+                : "Share"}
+          </button>
           <a
             href={facebookUrl}
             target="_blank"
@@ -54,17 +107,16 @@ export function ProductSharePanel({ locale, title, url }: ProductSharePanelProps
             className="inline-flex items-center gap-2 rounded-full border border-border bg-[#1877f2] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1464cf]"
           >
             <Link2 className="h-4 w-4" />
-            {locale === "ka" ? "გაზიარება Facebook-ზე" : "Share on Facebook"}
+            Facebook
           </a>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={handleWhatsAppShare}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-[#25d366] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1faa53]"
           >
             <MessageCircleMore className="h-4 w-4" />
             WhatsApp
-          </a>
+          </button>
           <button
             type="button"
             onClick={handleCopy}
