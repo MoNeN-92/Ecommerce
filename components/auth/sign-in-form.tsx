@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -37,6 +38,14 @@ export function SignInForm() {
       <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" />
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       <Button onClick={submit} className="w-full">Sign in</Button>
+      <div className="border-t border-border pt-4 text-center text-sm text-slate-600">
+        <p>
+          Don&apos;t have an account?{" "}
+          <Link href="/auth/register" className="font-semibold text-primary transition hover:opacity-80">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
