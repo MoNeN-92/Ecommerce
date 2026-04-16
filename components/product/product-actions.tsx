@@ -57,11 +57,15 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
       <Button variant="secondary" onClick={() => beginCheckout("stripe")} className="w-full sm:w-auto">
         {locale === "ka" ? "ონლაინ ყიდვა" : "Buy online"}
       </Button>
-      {product.installmentAvailable ? (
-        <Button variant="secondary" onClick={() => beginCheckout("installment")} className="w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] sm:w-auto">
-          {locale === "ka" ? "ონლაინ განვადება" : "Online installments"}
-        </Button>
-      ) : null}
+      <Button
+        variant="secondary"
+        onClick={() => beginCheckout("installment")}
+        disabled={!product.installmentAvailable}
+        className="w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
+        title={!product.installmentAvailable ? (locale === "ka" ? "ამ პროდუქტზე განვადება გამორთულია" : "Installments are disabled for this product") : undefined}
+      >
+        {locale === "ka" ? "ონლაინ განვადება" : "Online installments"}
+      </Button>
       <Button variant="ghost" onClick={toggleWishlist} className="w-full gap-2 sm:w-auto">
         <Heart className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-current text-red-500" : ""}`} />
         {locale === "ka" ? "სურვილებში" : "Wishlist"}

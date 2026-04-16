@@ -108,8 +108,32 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  await prisma.product.delete({
-    where: { id }
+
+  const orderItemCount = await prisma.orderItem.count({
+    where: { productId: id }
   });
-  return NextResponse.json({ success: true });
+
+  if (orderItemCount > 0) {
+    return NextResponse.json(
+      { message: "This product is linked to orders or invoices and cannot be deleted" },
+      { status: 409 }
+    );
+  }
+
+  try {
+    await prisma.product.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return NextResponse.json(
+        { message: "This product is linked to other records and cannot be deleted" },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json({ message: "Failed to delete product" }, { status: 500 });
+  }
 }

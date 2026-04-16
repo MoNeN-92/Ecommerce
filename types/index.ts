@@ -21,6 +21,8 @@ export type ProductCardItem = {
   featured: boolean;
   topProduct: boolean;
   installmentAvailable: boolean;
+  isDemo?: boolean;
+  sourceNote?: string | null;
 };
 
 export type ProductDetailItem = ProductCardItem & {
