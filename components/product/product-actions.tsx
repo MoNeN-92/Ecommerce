@@ -1,0 +1,71 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/store/cart-store";
+import { useRecentlyViewedStore } from "@/store/recently-viewed-store";
+import { useWishlistStore } from "@/store/wishlist-store";
+import type { ProductDetailItem } from "@/types";
+
+export function ProductActions({ product, locale }: { product: ProductDetailItem; locale: "ka" | "en" }) {
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
+  const wishlist = useWishlistStore((state) => state.items);
+  const toggle = useWishlistStore((state) => state.toggle);
+  const pushRecent = useRecentlyViewedStore((state) => state.push);
+
+  useEffect(() => {
+    pushRecent(product.slug);
+  }, [product.slug, pushRecent]);
+
+  const toggleWishlist = async () => {
+    toggle(product.id);
+    try {
+      await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id })
+      });
+    } catch {
+      // Keep local wishlist working even if account sync is unavailable.
+    }
+  };
+
+  const cartPayload = {
+    productId: product.id,
+    slug: product.slug,
+    quantity: 1,
+    name: product.name,
+    image: product.image,
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    stock: product.stock
+  };
+
+  const beginCheckout = (method: "stripe" | "installment") => {
+    addItem(cartPayload);
+    router.push(`/${locale}/checkout?method=${method}`);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      <Button onClick={() => addItem(cartPayload)}>
+        {locale === "ka" ? "კალათაში დამატება" : "Add to cart"}
+      </Button>
+      <Button variant="secondary" onClick={() => beginCheckout("stripe")}>
+        {locale === "ka" ? "ონლაინ ყიდვა" : "Buy online"}
+      </Button>
+      {product.installmentAvailable ? (
+        <Button variant="secondary" onClick={() => beginCheckout("installment")} className="border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf]">
+          {locale === "ka" ? "ონლაინ განვადება" : "Online installments"}
+        </Button>
+      ) : null}
+      <Button variant="ghost" onClick={toggleWishlist} className="gap-2">
+        <Heart className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-current text-red-500" : ""}`} />
+        {locale === "ka" ? "სურვილებში" : "Wishlist"}
+      </Button>
+    </div>
+  );
+}
