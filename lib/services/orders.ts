@@ -1,6 +1,7 @@
 import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { normalizeImageUrl } from "@/lib/images";
 import type { Locale } from "@/lib/i18n/config";
 import { createPaymentSession } from "@/lib/payments";
 import { manualInvoiceSchema } from "@/lib/validators/admin-orders";
@@ -36,7 +37,7 @@ export async function priceCartItems(items: { productId: string; quantity: numbe
         slug: product.slug,
         quantity,
         name: product.nameKa,
-        image: product.images[0] ?? "https://placehold.co/400x400?text=Product",
+        image: normalizeImageUrl(product.images[0], "product"),
         price: Number(product.price),
         compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
         stock: product.stock
@@ -306,7 +307,7 @@ export async function createManualInvoice(input: unknown) {
             unitPrice: product.price,
             compareAtPrice: product.compareAtPrice,
             quantity: item.quantity,
-            image: product.images[0],
+            image: normalizeImageUrl(product.images[0], "product"),
             specsSnapshot: (product.specs ?? {}) as Prisma.InputJsonValue
           }))
         }

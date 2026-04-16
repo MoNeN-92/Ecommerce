@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import { normalizeImageList, normalizeImageUrl } from "@/lib/images";
 import type { Locale } from "@/lib/i18n/config";
 import { productQuerySchema } from "@/lib/validators/catalog";
 import type { ProductCardItem, ProductDetailItem } from "@/types";
@@ -27,7 +28,7 @@ function mapProductCard(product: ProductWithCategory, locale: Locale): ProductCa
       product.shortDescriptionEn ?? ""
     ),
     brand: product.brand,
-    image: product.images[0] ?? "https://placehold.co/800x800?text=Product",
+    image: normalizeImageUrl(product.images[0], "product"),
     price: Number(product.price),
     compareAtPrice: serializePrice(product.compareAtPrice),
     stock: product.stock,
@@ -50,7 +51,7 @@ export const getCategories = unstable_cache(
       slug: category.slug,
       name: localizeText(locale, category.nameKa, category.nameEn),
       description: localizeText(locale, category.descriptionKa ?? "", category.descriptionEn ?? ""),
-      image: category.image ?? "https://placehold.co/800x600?text=Category",
+      image: normalizeImageUrl(category.image, "category"),
       featured: category.featured
     }));
   },
@@ -146,7 +147,7 @@ export const getFeaturedContent = unstable_cache(
         slug: category.slug,
         name: localizeText(locale, category.nameKa, category.nameEn),
         description: localizeText(locale, category.descriptionKa ?? "", category.descriptionEn ?? ""),
-        image: category.image ?? "https://placehold.co/800x600?text=Category"
+        image: normalizeImageUrl(category.image, "category")
       }))
     };
   },
@@ -170,7 +171,7 @@ export async function getProductBySlug(locale: Locale, slug: string): Promise<Pr
     ...mapProductCard(product, locale),
     description: localizeText(locale, product.descriptionKa, product.descriptionEn),
     specs: (product.specs as Record<string, string>) ?? {},
-    images: product.images,
+    images: normalizeImageList(product.images, "product"),
     metaTitle: localizeText(locale, product.seoTitleKa ?? "", product.seoTitleEn ?? ""),
     metaDescription: localizeText(
       locale,
@@ -220,7 +221,7 @@ export async function searchProducts(locale: Locale, term: string) {
     slug: product.slug,
     sku: product.sku,
     name: localizeText(locale, product.nameKa, product.nameEn),
-    image: product.images[0] ?? "https://placehold.co/300x300?text=Product",
+    image: normalizeImageUrl(product.images[0], "product"),
     price: Number(product.price),
     brand: product.brand
   }));

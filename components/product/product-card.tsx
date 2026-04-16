@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { RemoteImage } from "@/components/ui/remote-image";
 import type { ProductCardItem } from "@/types";
 import { formatCurrency, getLocaleCurrency } from "@/lib/utils";
 
@@ -12,11 +12,12 @@ export function ProductCard({ product, locale }: { product: ProductCardItem; loc
     >
       <div className="relative overflow-hidden rounded-[1.5rem] bg-[#f5f1ea]">
         <div className="absolute inset-x-10 top-4 h-20 rounded-full bg-[#b98b52]/12 blur-3xl" />
-        <Image
+        <RemoteImage
           src={product.image}
           alt={product.name}
           width={520}
           height={520}
+          sizes="(max-width: 768px) 100vw, 25vw"
           className="relative aspect-square h-auto w-full object-cover transition duration-500 group-hover:scale-105"
         />
       </div>

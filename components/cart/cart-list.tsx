@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { formatCurrency, getLocaleCurrency } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 
@@ -18,7 +18,7 @@ export function CartList({ locale }: { locale: "ka" | "en" }) {
     <div className="space-y-4">
       {items.map((item) => (
         <div key={item.productId} className="flex flex-col gap-4 rounded-[2rem] border border-border bg-white p-4 shadow-soft md:flex-row md:items-center">
-          <Image src={item.image} alt={item.name} width={120} height={120} className="rounded-[1.5rem]" />
+          <RemoteImage src={item.image} alt={item.name} width={120} height={120} sizes="120px" className="rounded-[1.5rem]" />
           <div className="flex-1">
             <p className="text-lg font-semibold text-slate-950">{item.name}</p>
             <p className="text-sm text-slate-500">SKU: {item.slug}</p>

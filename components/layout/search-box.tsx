@@ -1,9 +1,9 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useState, useTransition } from "react";
+import { RemoteImage } from "@/components/ui/remote-image";
 import { cn, formatCurrency, getLocaleCurrency } from "@/lib/utils";
 
 export function SearchBox({ locale }: { locale: "ka" | "en" }) {
@@ -64,7 +64,7 @@ export function SearchBox({ locale }: { locale: "ka" | "en" }) {
                 onClick={() => setOpen(false)}
                 className={cn("flex items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-slate-50")}
               >
-                <Image src={item.image} alt={item.name} width={56} height={56} className="rounded-2xl border border-black/[0.06]" />
+                <RemoteImage src={item.image} alt={item.name} width={56} height={56} sizes="56px" className="rounded-2xl border border-black/[0.06]" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-950">{item.name}</p>
                   <p className="text-xs text-slate-500">{item.brand}</p>
