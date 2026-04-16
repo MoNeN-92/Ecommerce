@@ -270,6 +270,19 @@ export function ProductForm({
 
     const payload = {
       ...form,
+      slug: form.slug.trim(),
+      sku: form.sku.trim(),
+      nameKa: form.nameKa.trim() || form.nameEn.trim(),
+      nameEn: form.nameEn.trim() || form.nameKa.trim(),
+      shortDescriptionKa: form.shortDescriptionKa.trim() || form.shortDescriptionEn.trim() || null,
+      shortDescriptionEn: form.shortDescriptionEn.trim() || form.shortDescriptionKa.trim() || null,
+      descriptionKa: form.descriptionKa.trim() || form.descriptionEn.trim(),
+      descriptionEn: form.descriptionEn.trim() || form.descriptionKa.trim(),
+      seoTitleKa: form.seoTitleKa?.trim() || null,
+      seoTitleEn: form.seoTitleEn?.trim() || null,
+      seoDescriptionKa: form.seoDescriptionKa?.trim() || null,
+      seoDescriptionEn: form.seoDescriptionEn?.trim() || null,
+      brand: form.brand.trim(),
       price: Number(form.price),
       compareAtPrice: discount.enabled ? computedCompareAtPrice : null,
       stock: Number(form.stock),
@@ -287,9 +300,13 @@ export function ProductForm({
       body: JSON.stringify(payload)
     });
 
+    const data = await response.json().catch(() => null);
     setLoading(false);
     if (!response.ok) {
-      setError(messages.productForm.saveFailed);
+      const validationError = data?.errors
+        ? Object.values(data.errors as Record<string, string[]>).flat()[0]
+        : null;
+      setError(validationError ?? data?.message ?? messages.productForm.saveFailed);
       return;
     }
 
