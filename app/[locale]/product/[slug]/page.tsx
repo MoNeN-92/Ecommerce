@@ -92,8 +92,8 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="container-shell space-y-12 py-10">
-      <div className="grid gap-10 xl:grid-cols-[minmax(0,1.08fr)_420px] xl:items-start">
-        <div className="space-y-6">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,420px)] xl:items-start">
+        <div className="min-w-0 space-y-6">
           <ProductGallery images={product.images} alt={product.name} />
           <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center gap-3">
@@ -147,7 +147,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           </div>
         </div>
 
-        <aside className="xl:sticky xl:top-28">
+        <aside className="min-w-0 xl:sticky xl:top-28">
           <div className="space-y-5 rounded-[2rem] border border-black/[0.06] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6f3a]">
