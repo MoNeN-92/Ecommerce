@@ -33,6 +33,10 @@ const messages = {
       description: "მართეთ კატალოგი, ფასები, სურათები და მარაგი.",
       add: "პროდუქტის დამატება",
       edit: "რედაქტირება",
+      delete: "წაშლა",
+      deleting: "იშლება...",
+      deleteConfirm: "ნამდვილად გსურთ პროდუქტის წაშლა?",
+      deleteFailed: "პროდუქტის წაშლა ვერ მოხერხდა",
       inStock: "მარაგში"
     },
     orders: {
@@ -91,6 +95,11 @@ const messages = {
       uploading: "იტვირთება...",
       addUrl: "URL-ის დამატება",
       remove: "წაშლა",
+      delete: "წაშლა",
+      deleting: "იშლება...",
+      deleteConfirm: "ნამდვილად გსურთ კატეგორიის წაშლა?",
+      deleteFailed: "კატეგორიის წაშლა ვერ მოხერხდა",
+      hasProducts: "ამ კატეგორიაში მიბმული პროდუქტებია და წაშლა ვერ მოხერხდა",
       noImage: "სურათი ჯერ არ დამატებულა."
     },
     status: {
@@ -123,6 +132,7 @@ const messages = {
       addUrl: "URL-ის დამატება",
       noImages: "სურათები ჯერ არ დამატებულა.",
       primaryImage: "მთავარი სურათი",
+      setPrimaryImage: "მთავარ სურათად მონიშვნა",
       image: "სურათი",
       remove: "წაშლა",
       uploadFailed: "სურათის ატვირთვა ვერ მოხერხდა",
@@ -181,6 +191,10 @@ const messages = {
       description: "Manage catalog entries, pricing, images, and stock.",
       add: "Add product",
       edit: "Edit",
+      delete: "Delete",
+      deleting: "Deleting...",
+      deleteConfirm: "Are you sure you want to delete this product?",
+      deleteFailed: "Failed to delete product",
       inStock: "in stock"
     },
     orders: {
@@ -239,6 +253,11 @@ const messages = {
       uploading: "Uploading...",
       addUrl: "Add URL",
       remove: "Remove",
+      delete: "Delete",
+      deleting: "Deleting...",
+      deleteConfirm: "Are you sure you want to delete this category?",
+      deleteFailed: "Failed to delete category",
+      hasProducts: "This category still has linked products and cannot be deleted",
       noImage: "No image added yet."
     },
     status: {
@@ -271,6 +290,7 @@ const messages = {
       addUrl: "Add URL",
       noImages: "No images uploaded yet.",
       primaryImage: "Primary image",
+      setPrimaryImage: "Set as primary",
       image: "Image",
       remove: "Remove",
       uploadFailed: "Image upload failed",

@@ -9,7 +9,7 @@ import { cn, formatCurrency, getLocaleCurrency } from "@/lib/utils";
 export function SearchBox({ locale, className }: { locale: "ka" | "en"; className?: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<
-    Array<{ id: string; slug: string; name: string; image: string; price: number; brand: string }>
+    Array<{ id: string; slug: string; name: string; image: string; price: number; brand: string; sku: string }>
   >([]);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -44,7 +44,7 @@ export function SearchBox({ locale, className }: { locale: "ka" | "en"; classNam
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder={locale === "ka" ? "მოძებნე პროდუქტები" : "Search products"}
+          placeholder={locale === "ka" ? "მოძებნე პროდუქტი ან კოდი" : "Search products or SKU"}
           className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
         />
         {query ? (
@@ -67,7 +67,9 @@ export function SearchBox({ locale, className }: { locale: "ka" | "en"; classNam
                 <RemoteImage src={item.image} alt={item.name} width={56} height={56} sizes="56px" className="rounded-2xl border border-black/[0.06]" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-950">{item.name}</p>
-                  <p className="text-xs text-slate-500">{item.brand}</p>
+                  <p className="text-xs text-slate-500">
+                    {item.brand} · {item.sku}
+                  </p>
                 </div>
                 <span className="text-sm font-semibold text-primary">
                   {formatCurrency(item.price, getLocaleCurrency(locale))}

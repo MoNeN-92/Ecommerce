@@ -65,8 +65,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  await prisma.category.delete({
-    where: { id }
-  });
-  return NextResponse.json({ success: true });
+  try {
+    await prisma.category.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return NextResponse.json({ message: "This category still has linked products and cannot be deleted" }, { status: 409 });
+    }
+
+    return NextResponse.json({ message: "Failed to delete category" }, { status: 500 });
+  }
 }

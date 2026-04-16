@@ -207,7 +207,8 @@ export async function searchProducts(locale: Locale, term: string) {
       OR: [
         { nameKa: { contains: term, mode: "insensitive" } },
         { nameEn: { contains: term, mode: "insensitive" } },
-        { brand: { contains: term, mode: "insensitive" } }
+        { brand: { contains: term, mode: "insensitive" } },
+        { sku: { contains: term, mode: "insensitive" } }
       ]
     },
     include: {

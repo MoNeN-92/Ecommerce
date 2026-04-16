@@ -1,3 +1,4 @@
+import { AdminDeleteButton } from "@/components/admin/admin-delete-button";
 import { CategoryCreateForm } from "@/components/admin/category-create-form";
 import { Card } from "@/components/ui/card";
 import { prisma } from "@/lib/db/prisma";
@@ -38,7 +39,17 @@ export default async function AdminCategoriesPage({
                   <p className="text-sm text-slate-500">/{category.slug}</p>
                 </div>
               </div>
-              <span className="text-sm text-slate-500">{category.featured ? messages.categories.featured : messages.categories.standard}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-500">{category.featured ? messages.categories.featured : messages.categories.standard}</span>
+                <AdminDeleteButton
+                  endpoint={`/api/admin/categories/${category.id}`}
+                  confirmMessage={messages.categories.deleteConfirm}
+                  label={messages.categories.delete}
+                  deletingLabel={messages.categories.deleting}
+                  fallbackError={messages.categories.deleteFailed}
+                  className="px-4 py-2"
+                />
+              </div>
             </div>
           ))}
         </div>

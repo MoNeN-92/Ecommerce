@@ -346,6 +346,13 @@ export function ProductForm({
     }));
   };
 
+  const setPrimaryImage = (url: string) => {
+    setForm((current: ProductFormState) => ({
+      ...current,
+      images: [url, ...current.images.filter((item: string) => item !== url)]
+    }));
+  };
+
   const updateSpecRow = (index: number, field: keyof SpecRow, value: string) => {
     setSpecRows((current) => current.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: value } : row)));
   };
@@ -566,17 +573,30 @@ export function ProductForm({
             {form.images.map((url: string, index: number) => (
               <div key={`${url}-${index}`} className="overflow-hidden rounded-[1.4rem] border border-black/[0.06] bg-white">
                 <img src={url} alt={`Product ${index + 1}`} className="h-40 w-full object-cover" />
-                <div className="flex items-center justify-between gap-3 p-3">
+                <div className="space-y-3 p-3">
                   <p className="text-xs font-medium text-slate-500">
                     {index === 0 ? messages.productForm.primaryImage : `${messages.productForm.image} ${index + 1}`}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(url)}
-                    className="text-xs font-semibold text-red-600 transition hover:text-red-700"
-                  >
-                    {messages.productForm.remove}
-                  </button>
+                  <div className="flex items-center justify-between gap-2">
+                    {index === 0 ? (
+                      <span className="text-xs font-semibold text-emerald-700">{messages.productForm.primaryImage}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPrimaryImage(url)}
+                        className="text-xs font-semibold text-primary transition hover:text-slate-950"
+                      >
+                        {messages.productForm.setPrimaryImage}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(url)}
+                      className="text-xs font-semibold text-red-600 transition hover:text-red-700"
+                    >
+                      {messages.productForm.remove}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
