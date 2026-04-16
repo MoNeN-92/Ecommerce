@@ -14,7 +14,14 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
       </div>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
         {galleryImages.map((image) => (
-          <button key={image} type="button" onClick={() => setActive(image)} className="overflow-hidden rounded-2xl border border-border bg-white p-2">
+          <button
+            key={image}
+            type="button"
+            onClick={() => setActive(image)}
+            className={`overflow-hidden rounded-2xl border bg-white p-2 transition ${
+              active === image ? "border-[#b98b52]/60 ring-2 ring-[#b98b52]/15" : "border-border"
+            }`}
+          >
             <RemoteImage src={image} alt={alt} width={200} height={200} sizes="25vw" className="aspect-square w-full rounded-xl object-cover" />
           </button>
         ))}

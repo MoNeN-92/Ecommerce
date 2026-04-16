@@ -43,6 +43,18 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   const related = await getRelatedProducts(normalized, product.slug, product.categorySlug);
   const installmentEstimate = product.price / 12;
   const productUrl = `${SITE_URL}/${normalized}/product/${product.slug}`;
+  const quickFacts =
+    normalized === "ka"
+      ? [
+          { label: "ბრენდი", value: product.brand },
+          { label: "კატეგორია", value: product.categoryName },
+          { label: "კოდი", value: product.sku }
+        ]
+      : [
+          { label: "Brand", value: product.brand },
+          { label: "Category", value: product.categoryName },
+          { label: "SKU", value: product.sku }
+        ];
   const faqItems =
     normalized === "ka"
       ? [
@@ -52,7 +64,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           },
           {
             question: "როგორია მიწოდების პირობები?",
-            answer: "თბილისში ხელმისაწვდომია სწრაფი dispatch, ხოლო რეგიონებში ხორციელდება მიწოდება მოკლე ვადაში."
+            answer: "თბილისში ხელმისაწვდომია სწრაფი მიწოდება, ხოლო რეგიონებში შეკვეთები იგზავნება მოკლე ვადაში."
           },
           {
             question: "აქვს თუ არა ონლაინ განვადება?",
@@ -68,7 +80,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           },
           {
             question: "What are the delivery conditions?",
-            answer: "Fast dispatch is available in Tbilisi, with short delivery windows for regional orders."
+            answer: "Fast delivery is available in Tbilisi, with short lead times for regional orders."
           },
           {
             question: "Are online installments available?",
@@ -80,56 +92,36 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="container-shell space-y-12 py-10">
-      <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-        <ProductGallery images={product.images} alt={product.name} />
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,1.08fr)_420px] xl:items-start">
         <div className="space-y-6">
-          <Badge>{product.brand}</Badge>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-slate-950">{product.name}</h1>
-          <p className="text-lg text-slate-600">{product.description}</p>
-          <div className="flex items-end gap-4">
-            <span className="text-3xl font-bold text-slate-950">{formatCurrency(product.price, getLocaleCurrency(normalized))}</span>
-            {product.compareAtPrice ? <span className="text-lg text-slate-400 line-through">{formatCurrency(product.compareAtPrice, getLocaleCurrency(normalized))}</span> : null}
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
-              <CreditCard className="h-5 w-5 text-[#9a6f3a]" />
-              <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "ონლაინ ყიდვა" : "Buy online"}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {normalized === "ka" ? "ბარათით ონლაინ გადახდა checkout-იდან." : "Complete online card payment directly from checkout."}
-              </p>
+          <ProductGallery images={product.images} alt={product.name} />
+          <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge>{product.brand}</Badge>
+              <span className="rounded-full border border-black/[0.06] px-3 py-1 text-xs font-semibold text-slate-600">
+                {product.categoryName}
+              </span>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${product.stock > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                {product.stock > 0 ? (normalized === "ka" ? "მარაგშია" : "In stock") : normalized === "ka" ? "ამოწურულია" : "Out of stock"}
+              </span>
             </div>
-            {product.installmentAvailable ? (
-              <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
-                <ShieldCheck className="h-5 w-5 text-[#9a6f3a]" />
-                <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "განვადება" : "Installments"}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {normalized === "ka"
-                    ? `ონლაინ მოთხოვნა 12 თვემდე. დაახლოებით ${installmentEstimate.toFixed(2)} GEL / თვეში.`
-                    : `Online request up to 12 months. About ${installmentEstimate.toFixed(2)} GEL / month.`}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-[1.5rem] border border-border bg-slate-50 p-4">
-                <ShieldCheck className="h-5 w-5 text-slate-400" />
-                <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "განვადება" : "Installments"}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {normalized === "ka" ? "ამ პროდუქტზე ონლაინ განვადება ამ ეტაპზე გამორთულია." : "Online installments are currently disabled for this product."}
-                </p>
-              </div>
-            )}
-            <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
-              <Truck className="h-5 w-5 text-[#9a6f3a]" />
-              <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "მიწოდება" : "Delivery"}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {normalized === "ka" ? "თბილისში სწრაფი dispatch და რეგიონული მიწოდება." : "Fast dispatch in Tbilisi and regional delivery."}
-              </p>
+            <h1 className="mt-5 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
+            <p className="mt-4 text-base leading-8 text-slate-600">{product.shortDescription || product.description}</p>
+            <div className="mt-6 grid gap-4 border-t border-border pt-6 sm:grid-cols-3">
+              {quickFacts.map((item) => (
+                <div key={item.label} className="rounded-[1.5rem] bg-[#faf7f2] px-4 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{item.label}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">{item.value}</p>
+                </div>
+              ))}
             </div>
           </div>
-          <p className={`text-sm font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {product.stock > 0 ? (normalized === 'ka' ? 'მარაგშია' : 'In stock') : normalized === 'ka' ? 'ამოწურულია' : 'Out of stock'}
-          </p>
-          <ProductActions product={product} locale={normalized} />
-          <ProductSharePanel locale={normalized} title={product.name} url={productUrl} />
+
+          <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
+            <h2 className="text-xl font-semibold text-slate-950">{normalized === "ka" ? "სრული აღწერა" : "Full description"}</h2>
+            <p className="mt-4 text-base leading-8 text-slate-600">{product.description}</p>
+          </div>
+
           <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
             <h2 className="text-xl font-semibold text-slate-950">{normalized === 'ka' ? 'ტექნიკური მახასიათებლები' : 'Technical specifications'}</h2>
             <div className="mt-4 divide-y divide-border text-sm">
@@ -141,6 +133,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
               ))}
             </div>
           </div>
+
           <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
             <h2 className="text-xl font-semibold text-slate-950">{normalized === "ka" ? "ხშირად დასმული კითხვები" : "Frequently asked questions"}</h2>
             <div className="mt-4 space-y-4">
@@ -153,6 +146,59 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
             </div>
           </div>
         </div>
+
+        <aside className="xl:sticky xl:top-28">
+          <div className="space-y-5 rounded-[2rem] border border-black/[0.06] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6f3a]">
+                {normalized === "ka" ? "შეკვეთის ინფორმაცია" : "Order information"}
+              </p>
+              <div className="flex flex-wrap items-end gap-4">
+                <span className="text-3xl font-bold text-slate-950">{formatCurrency(product.price, getLocaleCurrency(normalized))}</span>
+                {product.compareAtPrice ? <span className="text-lg text-slate-400 line-through">{formatCurrency(product.compareAtPrice, getLocaleCurrency(normalized))}</span> : null}
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
+                <CreditCard className="h-5 w-5 text-[#9a6f3a]" />
+                <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "ონლაინ ყიდვა" : "Buy online"}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {normalized === "ka" ? "ბარათით ონლაინ გადახდა შეკვეთის დასრულების ეტაპზე." : "Complete card payment securely during checkout."}
+                </p>
+              </div>
+              {product.installmentAvailable ? (
+                <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
+                  <ShieldCheck className="h-5 w-5 text-[#9a6f3a]" />
+                  <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "ონლაინ განვადება" : "Online installments"}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {normalized === "ka"
+                      ? `განვადების მოთხოვნა ხელმისაწვდომია. 12 თვეზე სავარაუდო გადასახადი დაახლოებით ${installmentEstimate.toFixed(2)} GEL არის.`
+                      : `Installment requests are available. The estimated monthly payment over 12 months is about ${installmentEstimate.toFixed(2)} GEL.`}
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-[1.5rem] border border-border bg-slate-50 p-4">
+                  <ShieldCheck className="h-5 w-5 text-slate-400" />
+                  <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "ონლაინ განვადება" : "Online installments"}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    {normalized === "ka" ? "ამ პროდუქტზე ონლაინ განვადება ხელმისაწვდომი არ არის." : "Online installments are not available for this product."}
+                  </p>
+                </div>
+              )}
+              <div className="rounded-[1.5rem] border border-border bg-[#fbf6ee] p-4">
+                <Truck className="h-5 w-5 text-[#9a6f3a]" />
+                <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "მიწოდება" : "Delivery"}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {normalized === "ka" ? "თბილისში ხელმისაწვდომია სწრაფი მიწოდება, რეგიონებში კი შეკვეთები იგზავნება მოკლე ვადაში." : "Fast delivery is available in Tbilisi, and regional orders are shipped within short lead times."}
+                </p>
+              </div>
+            </div>
+
+            <ProductActions product={product} locale={normalized} />
+            <ProductSharePanel locale={normalized} title={product.name} url={productUrl} />
+          </div>
+        </aside>
       </div>
       <section className="space-y-6">
         <h2 className="font-display text-3xl font-bold tracking-tight text-slate-950">{normalized === 'ka' ? 'მსგავსი პროდუქტები' : 'Related products'}</h2>

@@ -50,19 +50,19 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
-      <Button onClick={() => addItem(cartPayload)}>
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <Button onClick={() => addItem(cartPayload)} className="w-full sm:w-auto">
         {locale === "ka" ? "კალათაში დამატება" : "Add to cart"}
       </Button>
-      <Button variant="secondary" onClick={() => beginCheckout("stripe")}>
+      <Button variant="secondary" onClick={() => beginCheckout("stripe")} className="w-full sm:w-auto">
         {locale === "ka" ? "ონლაინ ყიდვა" : "Buy online"}
       </Button>
       {product.installmentAvailable ? (
-        <Button variant="secondary" onClick={() => beginCheckout("installment")} className="border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf]">
+        <Button variant="secondary" onClick={() => beginCheckout("installment")} className="w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] sm:w-auto">
           {locale === "ka" ? "ონლაინ განვადება" : "Online installments"}
         </Button>
       ) : null}
-      <Button variant="ghost" onClick={toggleWishlist} className="gap-2">
+      <Button variant="ghost" onClick={toggleWishlist} className="w-full gap-2 sm:w-auto">
         <Heart className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-current text-red-500" : ""}`} />
         {locale === "ka" ? "სურვილებში" : "Wishlist"}
       </Button>
