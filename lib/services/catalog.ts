@@ -19,6 +19,7 @@ function mapProductCard(product: ProductWithCategory, locale: Locale): ProductCa
   return {
     id: product.id,
     slug: product.slug,
+    sku: product.sku,
     name: localizeText(locale, product.nameKa, product.nameEn),
     shortDescription: localizeText(
       locale,
@@ -217,6 +218,7 @@ export async function searchProducts(locale: Locale, term: string) {
   return products.map((product) => ({
     id: product.id,
     slug: product.slug,
+    sku: product.sku,
     name: localizeText(locale, product.nameKa, product.nameEn),
     image: product.images[0] ?? "https://placehold.co/300x300?text=Product",
     price: Number(product.price),

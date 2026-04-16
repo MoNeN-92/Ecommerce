@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { ProductGrid } from "@/components/product/product-grid";
 import { getAuthSession } from "@/lib/auth/session";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Wishlist");
 
 export default async function WishlistPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -26,6 +30,7 @@ export default async function WishlistPage({ params }: { params: Promise<{ local
   const products = wishlist.map(({ product }) => ({
     id: product.id,
     slug: product.slug,
+    sku: product.sku,
     name: normalized === 'ka' ? product.nameKa : product.nameEn,
     shortDescription: normalized === 'ka' ? product.shortDescriptionKa : product.shortDescriptionEn,
     brand: product.brand,

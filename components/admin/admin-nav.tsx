@@ -17,7 +17,7 @@ export function AdminNav() {
   ];
 
   return (
-    <aside className="rounded-[2rem] border border-border bg-white p-4 shadow-soft">
+    <aside className="admin-sidebar rounded-[2rem] border border-border bg-white p-4 shadow-soft">
       <div className="mb-4 flex items-center justify-between gap-3 border-b border-border px-2 pb-4">
         <Link
           href={locale === "en" ? "/en" : "/ka"}

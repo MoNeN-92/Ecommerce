@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Order confirmation");
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ locale: string; orderId: string }> }) {
   const { locale, orderId } = await params;

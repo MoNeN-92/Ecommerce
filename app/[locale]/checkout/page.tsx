@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { getAuthSession } from "@/lib/auth/session";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Checkout");
 
 export default async function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

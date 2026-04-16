@@ -30,8 +30,8 @@ export default async function AdminInvoicePage({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="invoice-page space-y-6">
+      <div className="invoice-actions flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-bold tracking-tight text-slate-950">{messages.orders.invoiceDocument}</h1>
           <p className="mt-2 text-slate-600">
@@ -41,7 +41,7 @@ export default async function AdminInvoicePage({
         <PrintInvoiceButton label={messages.orders.print} />
       </div>
 
-      <Card className="space-y-8">
+      <Card className="invoice-document space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">TEQ STORE</p>

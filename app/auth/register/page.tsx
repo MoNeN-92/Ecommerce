@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/register-form";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Create account", "Customer registration page.");
 
 export default function RegisterPage() {
   return (

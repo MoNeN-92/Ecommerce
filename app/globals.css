@@ -64,3 +64,44 @@ button {
   background-clip: text;
   color: transparent;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  body {
+    min-height: auto;
+  }
+
+  .admin-shell {
+    display: block !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .admin-sidebar,
+  .invoice-actions {
+    display: none !important;
+  }
+
+  .admin-content,
+  .invoice-page {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .invoice-document {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}

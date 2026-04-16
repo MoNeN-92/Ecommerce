@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Account");
 
 export default async function AccountLayout({
   children,

@@ -3,7 +3,16 @@ import { Noto_Sans_Georgian, Noto_Serif_Georgian } from "next/font/google";
 import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
-import { COMPANY_NAME, SITE_DESCRIPTION_EN, SITE_NAME } from "@/lib/site";
+import {
+  COMPANY_NAME,
+  DEFAULT_LOCALE,
+  SITE_DESCRIPTION_EN,
+  SITE_EMAIL,
+  SITE_NAME,
+  SITE_PHONE,
+  SITE_URL,
+  SUPPORTED_LOCALES
+} from "@/lib/site";
 import "./globals.css";
 
 const fontSans = Noto_Serif_Georgian({
@@ -19,8 +28,13 @@ const fontDisplay = Noto_Sans_Georgian({
 });
 
 export const metadata: Metadata = {
-  title: SITE_NAME,
-  description: SITE_DESCRIPTION_EN
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`
+  },
+  description: SITE_DESCRIPTION_EN,
+  applicationName: SITE_NAME
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -30,14 +44,31 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           {children}
           <JsonLd
-            data={{
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: COMPANY_NAME,
-              url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-              email: 'support@teqstore.ge',
-              telephone: '+995555000111'
-            }}
+            data={[
+              {
+                "@context": "https://schema.org",
+                "@type": "OnlineStore",
+                name: COMPANY_NAME,
+                url: SITE_URL,
+                email: SITE_EMAIL,
+                telephone: SITE_PHONE,
+                currenciesAccepted: "GEL",
+                availableLanguage: SUPPORTED_LOCALES,
+                areaServed: "GE"
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: SITE_NAME,
+                url: SITE_URL,
+                inLanguage: SUPPORTED_LOCALES,
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: `${SITE_URL}/${DEFAULT_LOCALE}/search?q={search_term_string}`,
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ]}
           />
         </Providers>
       </body>

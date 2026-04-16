@@ -1,13 +1,45 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Headphones, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { ProductGrid } from "@/components/product/product-grid";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { getFeaturedContent } from "@/lib/services/catalog";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const revalidate = 300;
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const normalized = normalizeLocale(locale);
+  const title =
+    normalized === "ka"
+      ? "ტექნიკის ონლაინ მაღაზია საქართველოში"
+      : "Electronics Online Store in Georgia";
+  const description =
+    normalized === "ka"
+      ? "შეარჩიეთ ტელეფონები, ყურსასმენები, დამტენები და სხვა ტექნიკა სწრაფი მიწოდებით და უსაფრთხო ონლაინ შეძენით."
+      : "Shop phones, headphones, chargers, and more electronics with fast delivery and secure online ordering in Georgia.";
+
+  return buildPageMetadata({
+    locale: normalized,
+    title,
+    description,
+    path: `/${normalized}`,
+    keywords:
+      normalized === "ka"
+        ? ["ტექნიკის მაღაზია", "ელექტრონიკა", "ტელეფონები", "გაჯეტები", "ონლაინ ყიდვა"]
+        : ["electronics store", "phones", "gadgets", "tech shop", "buy online"]
+  });
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -54,6 +86,35 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="space-y-20 pb-12 pt-10">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: normalized === "ka" ? "მთავარი გვერდი" : "Homepage",
+            description:
+              normalized === "ka"
+                ? "ტექნიკის კატალოგი საქართველოში სწრაფი მიწოდებით და ონლაინ შეძენის შესაძლებლობით."
+                : "Technology catalog in Georgia with fast delivery and online purchase options.",
+            url: `${SITE_URL}/${normalized}`,
+            isPartOf: {
+              "@type": "WebSite",
+              name: SITE_NAME,
+              url: SITE_URL
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: heroCards.map((product, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: `${SITE_URL}/${normalized}/product/${product.slug}`,
+              name: product.name
+            }))
+          }
+        ]}
+      />
       <section className="container-shell">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="rounded-[2.6rem] border border-black/[0.06] bg-white px-7 py-8 shadow-[0_28px_80px_rgba(15,23,42,0.06)] sm:px-10 sm:py-10">

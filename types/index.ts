@@ -8,6 +8,7 @@ export type LocalizedEntity = {
 export type ProductCardItem = {
   id: string;
   slug: string;
+  sku: string;
   name: string;
   shortDescription?: string | null;
   brand: string;

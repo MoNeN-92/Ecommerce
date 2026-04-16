@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { buildNoIndexMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Sign in", "Customer and admin sign in page.");
 
 export default function SignInPage() {
   return (

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CreditCard, ShieldCheck, Truck } from "lucide-react";
+import { ProductSharePanel } from "@/components/product/product-share-panel";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProductActions } from "@/components/product/product-actions";
 import { ProductGallery } from "@/components/product/product-gallery";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { buildProductMetadata } from "@/lib/seo/metadata";
 import { getProductBySlug, getRelatedProducts } from "@/lib/services/catalog";
 import { normalizeLocale } from "@/lib/i18n/config";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { formatCurrency, getLocaleCurrency } from "@/lib/utils";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -20,10 +22,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   }
 
   return buildProductMetadata({
+    locale: normalized,
     title: product.metaTitle || product.name,
     description: product.metaDescription || product.description,
     path: `/${normalized}/product/${product.slug}`,
-    images: product.images
+    images: product.images,
+    keywords: product.keywords
   });
 }
 
@@ -38,6 +42,41 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
   const related = await getRelatedProducts(normalized, product.slug, product.categorySlug);
   const installmentEstimate = product.price / 12;
+  const productUrl = `${SITE_URL}/${normalized}/product/${product.slug}`;
+  const faqItems =
+    normalized === "ka"
+      ? [
+          {
+            question: "შესაძლებელია ონლაინ ყიდვა?",
+            answer: "დიახ, პროდუქტის შეძენა შესაძლებელია ონლაინ გადახდით პირდაპირ checkout გვერდიდან."
+          },
+          {
+            question: "როგორია მიწოდების პირობები?",
+            answer: "თბილისში ხელმისაწვდომია სწრაფი dispatch, ხოლო რეგიონებში ხორციელდება მიწოდება მოკლე ვადაში."
+          },
+          {
+            question: "აქვს თუ არა ონლაინ განვადება?",
+            answer: product.installmentAvailable
+              ? `დიახ, ამ პროდუქტზე შესაძლებელია ონლაინ განვადების მოთხოვნა. სავარაუდო თვიური გადახდა 12 თვეზე არის დაახლოებით ${installmentEstimate.toFixed(2)} GEL.`
+              : "არა, ამ პროდუქტზე ონლაინ განვადება ამ ეტაპზე გამორთულია."
+          }
+        ]
+      : [
+          {
+            question: "Can I buy this product online?",
+            answer: "Yes, this product can be ordered online and paid for directly from checkout."
+          },
+          {
+            question: "What are the delivery conditions?",
+            answer: "Fast dispatch is available in Tbilisi, with short delivery windows for regional orders."
+          },
+          {
+            question: "Are online installments available?",
+            answer: product.installmentAvailable
+              ? `Yes, online installment requests are enabled for this product. The estimated monthly payment over 12 months is about ${installmentEstimate.toFixed(2)} GEL.`
+              : "No, online installments are currently disabled for this product."
+          }
+        ];
 
   return (
     <div className="container-shell space-y-12 py-10">
@@ -90,6 +129,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
             {product.stock > 0 ? (normalized === 'ka' ? 'მარაგშია' : 'In stock') : normalized === 'ka' ? 'ამოწურულია' : 'Out of stock'}
           </p>
           <ProductActions product={product} locale={normalized} />
+          <ProductSharePanel locale={normalized} title={product.name} url={productUrl} />
           <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
             <h2 className="text-xl font-semibold text-slate-950">{normalized === 'ka' ? 'ტექნიკური მახასიათებლები' : 'Technical specifications'}</h2>
             <div className="mt-4 divide-y divide-border text-sm">
@@ -97,6 +137,17 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 <div key={key} className="flex justify-between gap-6 py-3">
                   <span className="capitalize text-slate-500">{key}</span>
                   <span className="font-medium text-slate-950">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
+            <h2 className="text-xl font-semibold text-slate-950">{normalized === "ka" ? "ხშირად დასმული კითხვები" : "Frequently asked questions"}</h2>
+            <div className="mt-4 space-y-4">
+              {faqItems.map((item) => (
+                <div key={item.question} className="rounded-[1.4rem] border border-border bg-slate-50 p-4">
+                  <h3 className="text-sm font-semibold text-slate-950">{item.question}</h3>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">{item.answer}</p>
                 </div>
               ))}
             </div>
@@ -111,28 +162,67 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
         data={[
           {
             '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: product.name,
+            description: product.description,
+            url: productUrl,
+            inLanguage: normalized,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: SITE_NAME,
+              url: SITE_URL
+            }
+          },
+          {
+            '@context': 'https://schema.org',
             '@type': 'Product',
             name: product.name,
             image: product.images,
             description: product.description,
-            sku: product.slug,
+            sku: product.sku,
             brand: { '@type': 'Brand', name: product.brand },
+            category: product.categoryName,
+            ...(product.reviewCount > 0
+              ? {
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: Number(product.ratingAverage.toFixed(1)),
+                    reviewCount: product.reviewCount
+                  }
+                }
+              : {}),
             offers: {
               '@type': 'Offer',
               priceCurrency: 'GEL',
               price: product.price,
               availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-              url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${normalized}/product/${product.slug}`
+              url: productUrl,
+              seller: {
+                '@type': 'Organization',
+                name: SITE_NAME
+              }
             }
           },
           {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Home', item: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${normalized}` },
-              { '@type': 'ListItem', position: 2, name: product.categoryName, item: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${normalized}/category/${product.categorySlug}` },
-              { '@type': 'ListItem', position: 3, name: product.name, item: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${normalized}/product/${product.slug}` }
+              { '@type': 'ListItem', position: 1, name: normalized === 'ka' ? 'მთავარი' : 'Home', item: `${SITE_URL}/${normalized}` },
+              { '@type': 'ListItem', position: 2, name: product.categoryName, item: `${SITE_URL}/${normalized}/category/${product.categorySlug}` },
+              { '@type': 'ListItem', position: 3, name: product.name, item: productUrl }
             ]
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqItems.map((item) => ({
+              '@type': 'Question',
+              name: item.question,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: item.answer
+              }
+            }))
           }
         ]}
       />
