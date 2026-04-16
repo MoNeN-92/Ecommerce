@@ -66,23 +66,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const servicePillars =
     normalized === "ka"
       ? [
-          { icon: Truck, title: "სწრაფი dispatch", description: "თბილისში same-day ვარიანტები და სწრაფი რეგიონული მიწოდება." },
-          { icon: ShieldCheck, title: "უსაფრთხო შეძენა", description: "გამჭვირვალე ფასები, მკაფიო პირობები და დაცული checkout flow." },
-          { icon: Headphones, title: "შერჩეული ასორტიმენტი", description: "ტექნიკა, აუდიო და ყოველდღიური გაჯეტები ერთი დახვეწილი კატალოგიდან." }
+          { icon: Truck, title: "სწრაფი მიწოდება", description: "თბილისში ხელმისაწვდომია ოპერატიული მიტანა, ხოლო რეგიონებში მოკლე ვადიანი მომსახურება." },
+          { icon: ShieldCheck, title: "უსაფრთხო შეკვეთა", description: "გამჭვირვალე ფასები, მკაფიო პირობები და დაცული გადახდის პროცესი." },
+          { icon: Headphones, title: "შერჩეული ასორტიმენტი", description: "ტექნიკა, აუდიო მოწყობილობები და ყოველდღიური აქსესუარები ერთ სივრცეში." }
         ]
       : [
-          { icon: Truck, title: "Fast dispatch", description: "Same-day options in Tbilisi and quick regional delivery." },
-          { icon: ShieldCheck, title: "Secure purchase", description: "Transparent pricing, clear terms, and a protected checkout flow." },
-          { icon: Headphones, title: "Curated assortment", description: "Tech, audio, and everyday gadgets from one focused catalog." }
+          { icon: Truck, title: "Fast delivery", description: "Prompt delivery is available in Tbilisi, with short lead times across the regions." },
+          { icon: ShieldCheck, title: "Secure ordering", description: "Transparent pricing, clear terms, and a protected payment process." },
+          { icon: Headphones, title: "Selected assortment", description: "Technology, audio devices, and everyday accessories in one place." }
         ];
   const heroTitle =
     normalized === "ka"
-      ? "დახვეწილი ტექნიკის მაღაზია, რომელიც ვიზუალურადაც სანდოდ გამოიყურება"
-      : "A refined electronics store that looks as trustworthy as it feels";
+      ? "ოფიციალური ონლაინ მაღაზია ტექნიკისა და აქსესუარებისთვის"
+      : "A professional online store for electronics and accessories";
   const heroBody =
     normalized === "ka"
-      ? "მშვიდი ვიზუალური ენა, მკაფიო პროდუქტის hierarchy და კომერციულ შედეგზე ორიენტირებული storefront გამოცდილება საქართველოს ბაზრისთვის."
-      : "A calmer visual language, clear product hierarchy, and a storefront built for commercial trust in the Georgian market.";
+      ? "შეარჩიეთ ტელეფონები, ყურსასმენები, დამტენები და სხვა ტექნიკა მკაფიო კატალოგიდან, გამჭვირვალე პირობებითა და უსაფრთხო შეკვეთით."
+      : "Browse phones, headphones, chargers, and other electronics in a clear catalog with transparent terms and secure ordering.";
 
   return (
     <div className="space-y-20 pb-12 pt-10">
@@ -174,7 +174,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       {spotlight.brand}
                     </span>
                     <span className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9a6f3a]">
-                      {normalized === "ka" ? "ფოკუს პროდუქტი" : "Focus product"}
+                      {normalized === "ka" ? "გამორჩეული პროდუქტი" : "Featured product"}
                     </span>
                   </div>
                   <div>
@@ -244,15 +244,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2.5rem] border border-black/[0.06] bg-[#162033] p-8 text-white shadow-[0_28px_70px_rgba(15,23,42,0.12)] sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#d8b486]">
-              {normalized === "ka" ? "სარედაქციო ბლოკი" : "Editorial block"}
+              {normalized === "ka" ? "გამორჩეული შეთავაზებები" : "Featured selection"}
             </p>
             <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-              {normalized === "ka" ? "სუფთა კომპოზიცია, რომელიც პროდუქტს წინ აყენებს" : "A cleaner composition that puts the product first"}
+              {normalized === "ka" ? "პროდუქტები, რომლებიც განსაკუთრებით მოთხოვნადია" : "Products that stand out in the current selection"}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-300">
               {normalized === "ka"
-                ? "მთავარი გვერდი ახლა უფრო სანდო retail ბრენდს ჰგავს: ნაკლები ხმაური, უკეთესი spacing და მკაფიო ვიზუალური პრიორიტეტები."
-                : "The homepage now feels closer to a credible retail brand: less noise, better spacing, and clearer visual priorities."}
+                ? "მთავარ გვერდზე გამოკვეთილია მოთხოვნადი პოზიციები, აქტუალური კატეგორიები და სწრაფად საპოვნელი ძირითადი შეთავაზებები."
+                : "The homepage highlights in-demand items, key categories, and the most relevant offers in a clear structure."}
             </p>
           </div>
 
@@ -286,14 +286,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#9a6f3a]">
-                {normalized === "ka" ? "ტრენდული" : "Trending"}
+                {normalized === "ka" ? "პოპულარული" : "Popular"}
               </p>
               <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-slate-950">{t.home.trending}</h2>
             </div>
             <p className="max-w-xl text-sm leading-7 text-slate-600">
               {normalized === "ka"
-                ? "ფასზე, ბრენდზე და გამოსახულებაზე დაფუძნებული ბევრად უფრო სუფთა product grid."
-                : "A much cleaner product grid built around price, brand, and image clarity."}
+                ? "პროდუქტები დალაგებულია მკაფიო სტრუქტურით, რათა მარტივად შეაფასოთ ფასი, ბრენდი და ძირითადი მახასიათებლები."
+                : "Products are arranged in a clear structure so price, brand, and key details are easy to compare."}
             </p>
           </div>
           <ProductGrid products={content.trendingProducts} locale={normalized} />

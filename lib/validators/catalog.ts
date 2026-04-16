@@ -1,5 +1,25 @@
 import { z } from "zod";
 
+const booleanish = z.preprocess((value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === "true" || normalized === "1" || normalized === "on") {
+      return true;
+    }
+
+    if (normalized === "false" || normalized === "0" || normalized === "off" || normalized === "") {
+      return false;
+    }
+  }
+
+  return value;
+}, z.boolean());
+
 const nullableText = z.preprocess((value) => {
   if (typeof value !== "string") {
     return value;
@@ -45,10 +65,10 @@ export const productSchema = z.object({
   price: z.coerce.number().min(0),
   compareAtPrice: z.coerce.number().min(0).optional().nullable(),
   stock: z.coerce.number().int().min(0),
-  featured: z.boolean().default(false),
-  published: z.boolean().default(true),
-  topProduct: z.boolean().default(false),
-  installmentAvailable: z.boolean().default(true),
+  featured: booleanish.default(false),
+  published: booleanish.default(true),
+  topProduct: booleanish.default(false),
+  installmentAvailable: booleanish.default(true),
   categoryId: z.string().cuid(),
   images: z.array(z.string().url()).min(1),
   metaKeywords: z.array(z.string()).default([]),
@@ -69,5 +89,5 @@ export const categorySchema = z.object({
     const trimmed = value.trim();
     return trimmed === "" ? null : trimmed;
   }, z.string().url().optional().nullable()),
-  featured: z.boolean().default(false)
+  featured: booleanish.default(false)
 });

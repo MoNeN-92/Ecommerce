@@ -3,13 +3,13 @@ import Link from "next/link";
 export function Footer({ locale }: { locale: "ka" | "en" }) {
   return (
     <footer className="mt-24 border-t border-black/[0.06] bg-[#111827] text-white">
-      <div className="container-shell grid gap-10 py-16 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr]">
+      <div className="container-shell grid gap-8 py-12 sm:gap-10 sm:py-16 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr]">
         <div>
           <p className="font-display text-2xl font-semibold tracking-[0.12em] text-white">TechStore Georgia</p>
           <p className="mt-4 max-w-sm text-sm leading-7 text-slate-300">
             {locale === "ka"
-              ? "დახვეწილი ონლაინ storefront ტექნიკისა და აქსესუარებისთვის, სწრაფი მიწოდებით და სანდო სერვისით."
-              : "A refined online storefront for electronics and accessories with fast delivery and dependable service."}
+              ? "ონლაინ მაღაზია ტექნიკისა და აქსესუარებისთვის, სწრაფი მიწოდებითა და სანდო მომსახურებით."
+              : "An online store for electronics and accessories with fast delivery and dependable service."}
           </p>
         </div>
         <div>

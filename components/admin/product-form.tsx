@@ -39,6 +39,23 @@ const emptyState = {
 type ProductFormState = typeof emptyState;
 type SpecRow = { key: string; value: string };
 
+function Field({
+  label,
+  children,
+  className = ""
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`space-y-2 ${className}`}>
+      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 function buildInitialFormState(product?: any): ProductFormState {
   if (!product) {
     return emptyState;
@@ -98,42 +115,88 @@ export function ProductForm({
   const placeholders =
     locale === "ka"
       ? {
-          slug: "მაგ: iphone-15-pro-256gb",
-          sku: "მაგ: APL-IP15P-256",
-          nameKa: "მაგ: iPhone 15 Pro 256GB",
-          nameEn: "მაგ: iPhone 15 Pro 256GB",
-          brand: "მაგ: Apple",
-          sellingPrice: "მაგ: 3999",
-          stock: "მაგ: 12",
-          keywords: "მაგ: iphone, apple, smartphone, 256gb",
-          imageUrl: "https://...",
-          shortDescriptionKa: "მოკლე აღწერა ქართულად",
-          shortDescriptionEn: "Short description in English",
-          descriptionKa: "სრული აღწერა ქართულად",
-          descriptionEn: "Full description in English",
-          discountPercent: "მაგ: 10",
-          discountAmount: "მაგ: 200",
-          specsKey: "მაგ: display",
-          specsValue: "მაგ: 6.1-inch OLED"
+          slug: "მაგალითად: iphone-15-pro-256gb",
+          sku: "მაგალითად: APL-IP15P-256",
+          nameKa: "მაგალითად: Apple iPhone 15 Pro 256GB",
+          nameEn: "For example: Apple iPhone 15 Pro 256GB",
+          brand: "მაგალითად: Apple",
+          sellingPrice: "მაგალითად: 3999",
+          stock: "მაგალითად: 12",
+          keywords: "მაგალითად: iphone, apple, 256gb, smartphone",
+          imageUrl: "ჩასვით სურათის სრული ბმული",
+          shortDescriptionKa: "მოკლე აღწერა, რომელიც ქარდზე გამოჩნდება",
+          shortDescriptionEn: "Short description shown on the product card",
+          descriptionKa: "სრული აღწერა პროდუქტის შიდა გვერდისთვის",
+          descriptionEn: "Full description for the inner product page",
+          discountPercent: "მაგალითად: 10",
+          discountAmount: "მაგალითად: 200",
+          specsKey: "მაგალითად: ეკრანი",
+          specsValue: "მაგალითად: 6.1-inch OLED"
         }
       : {
-          slug: "e.g. iphone-15-pro-256gb",
-          sku: "e.g. APL-IP15P-256",
-          nameKa: "e.g. iPhone 15 Pro 256GB",
-          nameEn: "e.g. iPhone 15 Pro 256GB",
-          brand: "e.g. Apple",
-          sellingPrice: "e.g. 3999",
-          stock: "e.g. 12",
-          keywords: "e.g. iphone, apple, smartphone, 256gb",
-          imageUrl: "https://...",
+          slug: "For example: iphone-15-pro-256gb",
+          sku: "For example: APL-IP15P-256",
+          nameKa: "For example: Apple iPhone 15 Pro 256GB",
+          nameEn: "For example: Apple iPhone 15 Pro 256GB",
+          brand: "For example: Apple",
+          sellingPrice: "For example: 3999",
+          stock: "For example: 12",
+          keywords: "For example: iphone, apple, 256gb, smartphone",
+          imageUrl: "Paste the full image URL",
+          shortDescriptionKa: "Short description in Georgian for the product card",
+          shortDescriptionEn: "Short description shown on the product card",
+          descriptionKa: "Full Georgian description for the product page",
+          descriptionEn: "Full English description for the product page",
+          discountPercent: "For example: 10",
+          discountAmount: "For example: 200",
+          specsKey: "For example: Display",
+          specsValue: "For example: 6.1-inch OLED"
+        };
+  const labels =
+    locale === "ka"
+      ? {
+          slug: "სლაგი",
+          sku: "SKU",
+          nameKa: "დასახელება ქართულად",
+          nameEn: "დასახელება ინგლისურად",
+          brand: "ბრენდი",
+          category: "კატეგორია",
+          price: "ფასი",
+          stock: "რაოდენობა",
+          keywords: "საკვანძო სიტყვები",
+          shortDescriptionKa: "მოკლე აღწერა ქართულად",
+          shortDescriptionEn: "მოკლე აღწერა ინგლისურად",
+          descriptionKa: "სრული აღწერა ქართულად",
+          descriptionEn: "სრული აღწერა ინგლისურად",
+          imageUrl: "სურათის ბმული",
+          discountType: "ფასდაკლების ტიპი",
+          discountValue: "ფასდაკლების მნიშვნელობა",
+          seoTitleKa: "SEO სათაური ქართულად",
+          seoTitleEn: "SEO სათაური ინგლისურად",
+          seoDescriptionKa: "SEO აღწერა ქართულად",
+          seoDescriptionEn: "SEO აღწერა ინგლისურად"
+        }
+      : {
+          slug: "Slug",
+          sku: "SKU",
+          nameKa: "Name in Georgian",
+          nameEn: "Name in English",
+          brand: "Brand",
+          category: "Category",
+          price: "Price",
+          stock: "Quantity",
+          keywords: "Keywords",
           shortDescriptionKa: "Short description in Georgian",
           shortDescriptionEn: "Short description in English",
           descriptionKa: "Full description in Georgian",
           descriptionEn: "Full description in English",
-          discountPercent: "e.g. 10",
-          discountAmount: "e.g. 200",
-          specsKey: "e.g. display",
-          specsValue: "e.g. 6.1-inch OLED"
+          imageUrl: "Image URL",
+          discountType: "Discount type",
+          discountValue: "Discount value",
+          seoTitleKa: "SEO title in Georgian",
+          seoTitleEn: "SEO title in English",
+          seoDescriptionKa: "SEO description in Georgian",
+          seoDescriptionEn: "SEO description in English"
         };
   const [form, setForm] = useState(
     buildInitialFormState(product)
@@ -366,42 +429,60 @@ export function ProductForm({
   return (
     <div className="space-y-5 rounded-[2rem] border border-border bg-white p-6 shadow-soft">
       <div className="grid gap-4 md:grid-cols-2">
-        <Input
-          placeholder={placeholders.slug}
-          value={form.slug}
-          onChange={(event) => {
-            slugEditedRef.current = event.target.value.trim().length > 0;
-            setForm({ ...form, slug: event.target.value });
-          }}
-        />
-        <Input
-          placeholder={placeholders.sku}
-          value={form.sku}
-          onChange={(event) => {
-            skuEditedRef.current = event.target.value.trim().length > 0;
-            setForm({ ...form, sku: event.target.value });
-          }}
-        />
-        <Input placeholder={placeholders.nameKa} value={form.nameKa} onChange={(event) => setForm({ ...form, nameKa: event.target.value })} />
-        <Input placeholder={placeholders.nameEn} value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} />
-        <Input placeholder={placeholders.brand} value={form.brand} onChange={(event) => setForm({ ...form, brand: event.target.value })} />
-        <Select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
-          <option value="">{messages.productForm.category}</option>
-          {categories.map((category) => <option key={category.id} value={category.id}>{category.nameKa} / {category.nameEn}</option>)}
-        </Select>
-        <Input
-          placeholder={placeholders.sellingPrice}
-          type="number"
-          value={form.price}
-          onChange={(event) => setForm({ ...form, price: Number(event.target.value) })}
-        />
-        <Input
-          placeholder={placeholders.stock}
-          type="number"
-          value={form.stock}
-          onChange={(event) => setForm({ ...form, stock: Number(event.target.value) })}
-        />
-        <Input placeholder={placeholders.keywords} value={form.metaKeywords} onChange={(event) => setForm({ ...form, metaKeywords: event.target.value })} className="md:col-span-2" />
+        <Field label={labels.slug}>
+          <Input
+            placeholder={placeholders.slug}
+            value={form.slug}
+            onChange={(event) => {
+              slugEditedRef.current = event.target.value.trim().length > 0;
+              setForm({ ...form, slug: event.target.value });
+            }}
+          />
+        </Field>
+        <Field label={labels.sku}>
+          <Input
+            placeholder={placeholders.sku}
+            value={form.sku}
+            onChange={(event) => {
+              skuEditedRef.current = event.target.value.trim().length > 0;
+              setForm({ ...form, sku: event.target.value });
+            }}
+          />
+        </Field>
+        <Field label={labels.nameKa}>
+          <Input placeholder={placeholders.nameKa} value={form.nameKa} onChange={(event) => setForm({ ...form, nameKa: event.target.value })} />
+        </Field>
+        <Field label={labels.nameEn}>
+          <Input placeholder={placeholders.nameEn} value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} />
+        </Field>
+        <Field label={labels.brand}>
+          <Input placeholder={placeholders.brand} value={form.brand} onChange={(event) => setForm({ ...form, brand: event.target.value })} />
+        </Field>
+        <Field label={labels.category}>
+          <Select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })}>
+            <option value="">{messages.productForm.category}</option>
+            {categories.map((category) => <option key={category.id} value={category.id}>{category.nameKa} / {category.nameEn}</option>)}
+          </Select>
+        </Field>
+        <Field label={labels.price}>
+          <Input
+            placeholder={placeholders.sellingPrice}
+            type="number"
+            value={form.price}
+            onChange={(event) => setForm({ ...form, price: Number(event.target.value) })}
+          />
+        </Field>
+        <Field label={labels.stock}>
+          <Input
+            placeholder={placeholders.stock}
+            type="number"
+            value={form.stock}
+            onChange={(event) => setForm({ ...form, stock: Number(event.target.value) })}
+          />
+        </Field>
+        <Field label={labels.keywords} className="md:col-span-2">
+          <Input placeholder={placeholders.keywords} value={form.metaKeywords} onChange={(event) => setForm({ ...form, metaKeywords: event.target.value })} />
+        </Field>
       </div>
       <p className="-mt-1 text-xs text-slate-500">
         {messages.productForm.skuHelp}{" "}
@@ -466,14 +547,18 @@ export function ProductForm({
         </div>
 
         <div className="mt-4 flex gap-3">
-          <Input
-            placeholder={placeholders.imageUrl}
-            value={manualImageUrl}
-            onChange={(event) => setManualImageUrl(event.target.value)}
-          />
-          <Button type="button" variant="secondary" onClick={addManualImage}>
-            {messages.productForm.addUrl}
-          </Button>
+          <Field label={labels.imageUrl} className="flex-1">
+            <Input
+              placeholder={placeholders.imageUrl}
+              value={manualImageUrl}
+              onChange={(event) => setManualImageUrl(event.target.value)}
+            />
+          </Field>
+          <div className="self-end">
+            <Button type="button" variant="secondary" onClick={addManualImage}>
+              {messages.productForm.addUrl}
+            </Button>
+          </div>
         </div>
 
         {form.images.length ? (
@@ -521,16 +606,20 @@ export function ProductForm({
 
         {discount.enabled ? (
           <div className="mt-4 grid gap-4 md:grid-cols-[180px_1fr_1fr]">
-            <Select value={discount.mode} onChange={(event) => setDiscount((current) => ({ ...current, mode: event.target.value as "percent" | "fixed" }))}>
-              <option value="percent">{messages.productForm.percent}</option>
-              <option value="fixed">{messages.productForm.fixed}</option>
-            </Select>
-            <Input
-              placeholder={discount.mode === "percent" ? placeholders.discountPercent : placeholders.discountAmount}
-              type="number"
-              value={discount.value}
-              onChange={(event) => setDiscount((current) => ({ ...current, value: event.target.value }))}
-            />
+            <Field label={labels.discountType}>
+              <Select value={discount.mode} onChange={(event) => setDiscount((current) => ({ ...current, mode: event.target.value as "percent" | "fixed" }))}>
+                <option value="percent">{messages.productForm.percent}</option>
+                <option value="fixed">{messages.productForm.fixed}</option>
+              </Select>
+            </Field>
+            <Field label={labels.discountValue}>
+              <Input
+                placeholder={discount.mode === "percent" ? placeholders.discountPercent : placeholders.discountAmount}
+                type="number"
+                value={discount.value}
+                onChange={(event) => setDiscount((current) => ({ ...current, value: event.target.value }))}
+              />
+            </Field>
             <div className="rounded-2xl border border-black/[0.06] bg-white px-4 py-3 text-sm text-slate-700">
               {pricingPreview.compareAtPrice
                 ? `${messages.productForm.originalPrice}: ${pricingPreview.originalPrice.toFixed(2)} GEL | ${messages.productForm.finalPrice}: ${pricingPreview.finalPrice.toFixed(2)} GEL`
@@ -540,10 +629,32 @@ export function ProductForm({
         ) : null}
       </div>
 
-      <Textarea rows={3} placeholder={placeholders.shortDescriptionKa} value={form.shortDescriptionKa} onChange={(event) => setForm({ ...form, shortDescriptionKa: event.target.value })} />
-      <Textarea rows={3} placeholder={placeholders.shortDescriptionEn} value={form.shortDescriptionEn} onChange={(event) => setForm({ ...form, shortDescriptionEn: event.target.value })} />
-      <Textarea rows={6} placeholder={placeholders.descriptionKa} value={form.descriptionKa} onChange={(event) => setForm({ ...form, descriptionKa: event.target.value })} />
-      <Textarea rows={6} placeholder={placeholders.descriptionEn} value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} />
+      <Field label={labels.shortDescriptionKa}>
+        <Textarea rows={3} placeholder={placeholders.shortDescriptionKa} value={form.shortDescriptionKa} onChange={(event) => setForm({ ...form, shortDescriptionKa: event.target.value })} />
+      </Field>
+      <Field label={labels.shortDescriptionEn}>
+        <Textarea rows={3} placeholder={placeholders.shortDescriptionEn} value={form.shortDescriptionEn} onChange={(event) => setForm({ ...form, shortDescriptionEn: event.target.value })} />
+      </Field>
+      <Field label={labels.descriptionKa}>
+        <Textarea rows={6} placeholder={placeholders.descriptionKa} value={form.descriptionKa} onChange={(event) => setForm({ ...form, descriptionKa: event.target.value })} />
+      </Field>
+      <Field label={labels.descriptionEn}>
+        <Textarea rows={6} placeholder={placeholders.descriptionEn} value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} />
+      </Field>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field label={labels.seoTitleKa}>
+          <Input value={form.seoTitleKa} placeholder={placeholders.nameKa} onChange={(event) => setForm({ ...form, seoTitleKa: event.target.value })} />
+        </Field>
+        <Field label={labels.seoTitleEn}>
+          <Input value={form.seoTitleEn} placeholder={placeholders.nameEn} onChange={(event) => setForm({ ...form, seoTitleEn: event.target.value })} />
+        </Field>
+        <Field label={labels.seoDescriptionKa}>
+          <Textarea rows={3} placeholder={placeholders.descriptionKa} value={form.seoDescriptionKa} onChange={(event) => setForm({ ...form, seoDescriptionKa: event.target.value })} />
+        </Field>
+        <Field label={labels.seoDescriptionEn}>
+          <Textarea rows={3} placeholder={placeholders.descriptionEn} value={form.seoDescriptionEn} onChange={(event) => setForm({ ...form, seoDescriptionEn: event.target.value })} />
+        </Field>
+      </div>
       <div className="space-y-3 rounded-[1.75rem] border border-black/[0.06] bg-[#faf7f2] p-5">
         <div>
           <p className="text-sm font-semibold text-slate-950">{messages.productForm.specsTitle}</p>

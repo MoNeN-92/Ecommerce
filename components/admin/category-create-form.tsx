@@ -9,9 +9,44 @@ import type { AdminLocale } from "@/lib/i18n/admin";
 import { getAdminMessages } from "@/lib/i18n/admin";
 import { slugify } from "@/lib/utils";
 
+function Field({
+  label,
+  children,
+  className = ""
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`space-y-2 ${className}`}>
+      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 export function CategoryCreateForm({ locale }: { locale: AdminLocale }) {
   const router = useRouter();
   const messages = getAdminMessages(locale);
+  const placeholders =
+    locale === "ka"
+      ? {
+          slug: "მაგალითად: phones",
+          nameKa: "მაგალითად: ტელეფონები",
+          nameEn: "მაგალითად: Phones",
+          descriptionKa: "კატეგორიის მოკლე აღწერა ქართულად",
+          descriptionEn: "Short category description in English",
+          imageUrl: "ჩასვით სურათის სრული ბმული"
+        }
+      : {
+          slug: "For example: phones",
+          nameKa: "For example: ტელეფონები",
+          nameEn: "For example: Phones",
+          descriptionKa: "Short category description in Georgian",
+          descriptionEn: "Short category description in English",
+          imageUrl: "Paste the full image URL"
+        };
   const [form, setForm] = useState({
     slug: "",
     nameKa: "",
@@ -137,19 +172,29 @@ export function CategoryCreateForm({ locale }: { locale: AdminLocale }) {
   return (
     <div className="space-y-4 rounded-[2rem] border border-border bg-white p-6 shadow-soft">
       <div className="grid gap-4 md:grid-cols-3">
-        <Input
-          placeholder={messages.categories.slug}
-          value={form.slug}
-          onChange={(event) => {
-            slugEditedRef.current = event.target.value.trim().length > 0;
-            setForm({ ...form, slug: event.target.value });
-          }}
-        />
-        <Input placeholder={messages.categories.nameKa} value={form.nameKa} onChange={(event) => setForm({ ...form, nameKa: event.target.value })} />
-        <Input placeholder={messages.categories.nameEn} value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} />
+        <Field label={messages.categories.slug}>
+          <Input
+            placeholder={placeholders.slug}
+            value={form.slug}
+            onChange={(event) => {
+              slugEditedRef.current = event.target.value.trim().length > 0;
+              setForm({ ...form, slug: event.target.value });
+            }}
+          />
+        </Field>
+        <Field label={messages.categories.nameKa}>
+          <Input placeholder={placeholders.nameKa} value={form.nameKa} onChange={(event) => setForm({ ...form, nameKa: event.target.value })} />
+        </Field>
+        <Field label={messages.categories.nameEn}>
+          <Input placeholder={placeholders.nameEn} value={form.nameEn} onChange={(event) => setForm({ ...form, nameEn: event.target.value })} />
+        </Field>
       </div>
-      <Textarea placeholder={messages.categories.descriptionKa} value={form.descriptionKa} onChange={(event) => setForm({ ...form, descriptionKa: event.target.value })} />
-      <Textarea placeholder={messages.categories.descriptionEn} value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} />
+      <Field label={messages.categories.descriptionKa}>
+        <Textarea placeholder={placeholders.descriptionKa} value={form.descriptionKa} onChange={(event) => setForm({ ...form, descriptionKa: event.target.value })} />
+      </Field>
+      <Field label={messages.categories.descriptionEn}>
+        <Textarea placeholder={placeholders.descriptionEn} value={form.descriptionEn} onChange={(event) => setForm({ ...form, descriptionEn: event.target.value })} />
+      </Field>
       <label className="flex items-center gap-3 rounded-2xl border border-border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
         <input
           type="checkbox"
@@ -178,14 +223,18 @@ export function CategoryCreateForm({ locale }: { locale: AdminLocale }) {
         </div>
 
         <div className="mt-4 flex gap-3">
-          <Input
-            placeholder={messages.categories.imageUrl}
-            value={manualImageUrl}
-            onChange={(event) => setManualImageUrl(event.target.value)}
-          />
-          <Button type="button" variant="secondary" onClick={addManualImage}>
-            {messages.categories.addUrl}
-          </Button>
+          <Field label={messages.categories.imageUrl} className="flex-1">
+            <Input
+              placeholder={placeholders.imageUrl}
+              value={manualImageUrl}
+              onChange={(event) => setManualImageUrl(event.target.value)}
+            />
+          </Field>
+          <div className="self-end">
+            <Button type="button" variant="secondary" onClick={addManualImage}>
+              {messages.categories.addUrl}
+            </Button>
+          </div>
         </div>
 
         {form.image ? (

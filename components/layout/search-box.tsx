@@ -6,7 +6,7 @@ import { useDeferredValue, useEffect, useState, useTransition } from "react";
 import { RemoteImage } from "@/components/ui/remote-image";
 import { cn, formatCurrency, getLocaleCurrency } from "@/lib/utils";
 
-export function SearchBox({ locale }: { locale: "ka" | "en" }) {
+export function SearchBox({ locale, className }: { locale: "ka" | "en"; className?: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<
     Array<{ id: string; slug: string; name: string; image: string; price: number; brand: string }>
@@ -37,7 +37,7 @@ export function SearchBox({ locale }: { locale: "ka" | "en" }) {
   }, [deferredQuery, locale]);
 
   return (
-    <div className="relative w-full max-w-xl">
+    <div className={cn("relative w-full max-w-xl", className)}>
       <div className="flex items-center gap-2 rounded-full border border-black/[0.07] bg-white/90 px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
         <Search className="h-4 w-4 text-slate-400" />
         <input
@@ -54,7 +54,7 @@ export function SearchBox({ locale }: { locale: "ka" | "en" }) {
         ) : null}
       </div>
       {open && (results.length > 0 || isPending) ? (
-        <div className="absolute inset-x-0 top-full z-20 mt-3 rounded-[1.75rem] border border-black/[0.06] bg-white p-3 shadow-[0_24px_60px_rgba(15,23,42,0.09)]">
+        <div className="absolute inset-x-0 top-full z-20 mt-3 max-h-[60vh] overflow-y-auto rounded-[1.75rem] border border-black/[0.06] bg-white p-3 shadow-[0_24px_60px_rgba(15,23,42,0.09)]">
           {isPending ? <p className="px-2 py-3 text-sm text-slate-500">Loading...</p> : null}
           <div className="space-y-2">
             {results.map((item) => (
