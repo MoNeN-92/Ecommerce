@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { randomBytes } from "crypto";
 import { twMerge } from "tailwind-merge";
 import { SITE_URL } from "@/lib/site";
 
@@ -93,6 +94,10 @@ export function generateOrderNumber() {
   ).padStart(2, "0")}`;
   const random = Math.floor(1000 + Math.random() * 9000);
   return `TG-${stamp}-${random}`;
+}
+
+export function generateConfirmationToken() {
+  return randomBytes(24).toString("hex");
 }
 
 export function buildAbsoluteUrl(path: string) {

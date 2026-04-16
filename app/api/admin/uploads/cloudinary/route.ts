@@ -4,6 +4,9 @@ import { getCloudinaryConfig, signCloudinaryParams } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
 
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+
 export async function POST(request: Request) {
   await requireAdmin();
 
@@ -21,6 +24,14 @@ export async function POST(request: Request) {
 
   if (!(file instanceof File)) {
     return NextResponse.json({ message: "File is required" }, { status: 400 });
+  }
+
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    return NextResponse.json({ message: "Unsupported image format" }, { status: 400 });
+  }
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return NextResponse.json({ message: "Image is too large" }, { status: 400 });
   }
 
   const timestamp = Math.floor(Date.now() / 1000);

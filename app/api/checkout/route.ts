@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth/session";
-import { rateLimit } from "@/lib/rate-limit";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { createOrder } from "@/lib/services/orders";
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getClientIp(request.headers.get("x-forwarded-for"));
   const limited = rateLimit(`checkout:${ip}`, 30);
 
   if (!limited.success) {

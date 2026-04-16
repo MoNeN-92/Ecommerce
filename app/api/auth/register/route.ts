@@ -2,11 +2,11 @@ import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 import { getRoleForEmail } from "@/lib/auth/admin-allowlist";
 import { prisma } from "@/lib/db/prisma";
-import { rateLimit } from "@/lib/rate-limit";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { registerSchema } from "@/lib/validators/auth";
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getClientIp(request.headers.get("x-forwarded-for"));
   const limited = rateLimit(`register:${ip}`, 10);
 
   if (!limited.success) {

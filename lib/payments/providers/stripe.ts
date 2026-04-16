@@ -14,6 +14,7 @@ export async function createStripeCheckoutSession({
   order: {
     id: string;
     orderNumber: string;
+    confirmationToken: string;
     items: Array<{
       nameKa: string;
       nameEn: string;
@@ -31,7 +32,7 @@ export async function createStripeCheckoutSession({
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    success_url: `${baseUrl}/${locale}/order-confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${baseUrl}/${locale}/order-confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}&token=${order.confirmationToken}`,
     cancel_url: `${baseUrl}/${locale}/checkout?cancelled=1`,
     payment_method_types: ["card"],
     client_reference_id: order.id,

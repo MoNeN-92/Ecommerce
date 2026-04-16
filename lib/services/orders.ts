@@ -6,7 +6,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createPaymentSession } from "@/lib/payments";
 import { manualInvoiceSchema } from "@/lib/validators/admin-orders";
 import { checkoutSchema } from "@/lib/validators/checkout";
-import { generateOrderNumber } from "@/lib/utils";
+import { generateConfirmationToken, generateOrderNumber } from "@/lib/utils";
 
 function decimal(value: number) {
   return new Prisma.Decimal(value.toFixed(2));
@@ -31,11 +31,10 @@ export async function priceCartItems(items: { productId: string; quantity: numbe
         return null;
       }
 
-      const quantity = Math.min(item.quantity, product.stock);
       return {
         productId: product.id,
         slug: product.slug,
-        quantity,
+        quantity: item.quantity,
         name: product.nameKa,
         image: normalizeImageUrl(product.images[0], "product"),
         price: Number(product.price),
@@ -68,12 +67,18 @@ export async function priceCartItems(items: { productId: string; quantity: numbe
 export async function createOrder(input: unknown, userId?: string | null) {
   const parsed = checkoutSchema.parse(input);
   const priced = await priceCartItems(parsed.items);
+  const confirmationToken = generateConfirmationToken();
 
   if (!priced.items.length) {
     throw new Error("Cart is empty");
   }
 
   const normalizedItems = priced.items.filter(Boolean) as NonNullable<(typeof priced.items)[number]>[];
+
+  if (normalizedItems.length !== parsed.items.length) {
+    throw new Error("One or more products are unavailable");
+  }
+
   const confirmationEmail = parsed.guest?.email || parsed.shippingAddress.email || "";
   const normalizedNotes = [
     parsed.notes,
@@ -109,6 +114,18 @@ export async function createOrder(input: unknown, userId?: string | null) {
 
     const productMap = new Map(products.map((product) => [product.id, product]));
 
+    for (const line of normalizedItems) {
+      const product = productMap.get(line.productId);
+
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      if (line.quantity < 1 || product.stock < line.quantity) {
+        throw new Error(`Insufficient stock for ${product.nameEn}`);
+      }
+    }
+
     const createdOrder = await tx.order.create({
       data: {
         orderNumber: generateOrderNumber(),
@@ -124,6 +141,7 @@ export async function createOrder(input: unknown, userId?: string | null) {
         total: decimal(priced.pricing.total),
         paymentProvider: parsed.paymentProvider,
         paymentStatus: PaymentStatus.PENDING,
+        paymentIntentId: confirmationToken,
         notes: normalizedNotes || undefined,
         shippingAddressId: shippingAddress.id,
         billingAddressId: billingAddress.id,
@@ -148,16 +166,21 @@ export async function createOrder(input: unknown, userId?: string | null) {
     });
 
     await Promise.all(
-      normalizedItems.map((line) =>
-        tx.product.update({
-          where: { id: line.productId },
+      normalizedItems.map(async (line) => {
+        const updated = await tx.product.updateMany({
+          where: { id: line.productId, stock: { gte: line.quantity } },
           data: {
             stock: {
               decrement: line.quantity
             }
           }
-        })
-      )
+        });
+
+        if (updated.count !== 1) {
+          const product = productMap.get(line.productId);
+          throw new Error(`Insufficient stock for ${product?.nameEn ?? "product"}`);
+        }
+      })
     );
 
     return createdOrder;
@@ -176,6 +199,7 @@ export async function createOrder(input: unknown, userId?: string | null) {
     order: {
       id: orderWithItems.id,
       orderNumber: orderWithItems.orderNumber,
+      confirmationToken,
       paymentProvider: orderWithItems.paymentProvider,
       items: orderWithItems.items.map((item) => ({
         nameKa: item.nameKa,
@@ -193,17 +217,20 @@ export async function createOrder(input: unknown, userId?: string | null) {
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        stripeSessionId: paymentSession.externalId,
-        paymentIntentId: paymentSession.externalId
+        stripeSessionId: paymentSession.externalId
       }
     });
   }
 
-  await sendOrderConfirmationEmail({
-    to: confirmationEmail,
-    orderNumber: order.orderNumber,
-    locale: parsed.locale as Locale
-  });
+  try {
+    await sendOrderConfirmationEmail({
+      to: confirmationEmail,
+      orderNumber: order.orderNumber,
+      locale: parsed.locale as Locale
+    });
+  } catch (error) {
+    console.error("Order confirmation email failed", error);
+  }
 
   return {
     order: orderWithItems,
@@ -315,16 +342,20 @@ export async function createManualInvoice(input: unknown) {
     });
 
     await Promise.all(
-      normalizedItems.map(({ item, product }) =>
-        tx.product.update({
-          where: { id: product.id },
+      normalizedItems.map(async ({ item, product }) => {
+        const updated = await tx.product.updateMany({
+          where: { id: product.id, stock: { gte: item.quantity } },
           data: {
             stock: {
               decrement: item.quantity
             }
           }
-        })
-      )
+        });
+
+        if (updated.count !== 1) {
+          throw new Error(`Insufficient stock for ${product.nameEn}`);
+        }
+      })
     );
 
     return createdOrder;

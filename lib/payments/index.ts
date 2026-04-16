@@ -9,6 +9,7 @@ export async function createPaymentSession({
   order: {
     id: string;
     orderNumber: string;
+    confirmationToken: string;
     paymentProvider: string;
     items: Array<{
       nameKa: string;
@@ -31,6 +32,7 @@ export async function createPaymentSession({
 
   return createManualCheckout({
     orderId: order.id,
+    confirmationToken: order.confirmationToken,
     baseUrl,
     locale
   });

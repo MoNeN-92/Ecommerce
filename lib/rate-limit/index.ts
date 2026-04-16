@@ -7,6 +7,10 @@ type Entry = {
 
 const store = new Map<string, Entry>();
 
+export function getClientIp(headerValue: string | null | undefined) {
+  return headerValue?.split(",")[0]?.trim() || "local";
+}
+
 export function rateLimit(key: string, limit: number) {
   const now = Date.now();
   const current = store.get(key);

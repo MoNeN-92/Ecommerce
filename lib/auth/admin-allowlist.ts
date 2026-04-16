@@ -4,7 +4,15 @@ function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
+function isBootstrapEnabled() {
+  return process.env.ADMIN_BOOTSTRAP_ENABLED === "true";
+}
+
 export function getAdminEmailAllowlist() {
+  if (!isBootstrapEnabled()) {
+    return new Set<string>();
+  }
+
   return new Set(
     (process.env.ADMIN_EMAIL_ALLOWLIST ?? "")
       .split(",")

@@ -1,21 +1,38 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getAuthSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { buildNoIndexMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildNoIndexMetadata("Order confirmation");
 
-export default async function OrderConfirmationPage({ params }: { params: Promise<{ locale: string; orderId: string }> }) {
+export default async function OrderConfirmationPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ locale: string; orderId: string }>;
+  searchParams?: Promise<{ token?: string }>;
+}) {
   const { locale, orderId } = await params;
+  const token = (await searchParams)?.token;
   const normalized = normalizeLocale(locale);
+  const session = await getAuthSession();
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: { items: true, shippingAddress: true }
   });
 
   if (!order) {
-    return <div className="container-shell py-16">Order not found.</div>;
+    notFound();
+  }
+
+  const hasSessionAccess = Boolean(session?.user?.id && order.userId === session.user.id);
+  const hasTokenAccess = Boolean(token && order.paymentIntentId && token === order.paymentIntentId);
+
+  if (!hasSessionAccess && !hasTokenAccess) {
+    notFound();
   }
 
   return (
