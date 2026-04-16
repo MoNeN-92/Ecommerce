@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { getDemoCategoryImage, getDemoProductImages } from "./demo-media";
 
 const prisma = new PrismaClient();
 const shouldReset = process.env.SEED_RESET === "true";
@@ -12,7 +13,7 @@ const categories = [
     descriptionKa: "ფლაგმანები და ყოველდღიური სმარტფონები წამყვანი ბრენდებისგან.",
     descriptionEn: "Flagship and everyday smartphones from top brands.",
     featured: true,
-    image: "/placeholders/category.svg"
+    image: getDemoCategoryImage("phones")
   },
   {
     slug: "headphones",
@@ -21,7 +22,7 @@ const categories = [
     descriptionKa: "უსადენო, პრემიუმ და ყოველდღიური აუდიო მოწყობილობები.",
     descriptionEn: "Wireless, premium, and everyday audio devices.",
     featured: true,
-    image: "/placeholders/category.svg"
+    image: getDemoCategoryImage("headphones")
   },
   {
     slug: "chargers",
@@ -30,7 +31,7 @@ const categories = [
     descriptionKa: "სწრაფი დამტენები, კაბელები და ენერგიის აქსესუარები.",
     descriptionEn: "Fast chargers, cables, and power accessories.",
     featured: true,
-    image: "/placeholders/category.svg"
+    image: getDemoCategoryImage("chargers")
   },
   {
     slug: "gadgets",
@@ -39,7 +40,7 @@ const categories = [
     descriptionKa: "ჭკვიანი საათები, ტაბლეტები და ყოველდღიური ტექნიკა.",
     descriptionEn: "Smartwatches, tablets, and everyday tech.",
     featured: true,
-    image: "/placeholders/category.svg"
+    image: getDemoCategoryImage("gadgets")
   }
 ];
 
@@ -124,7 +125,7 @@ function buildProduct({
     topProduct,
     installmentAvailable,
     metaKeywords: buildKeywords(brand, model, categorySlug),
-    images: ["/placeholders/product.svg"],
+    images: getDemoProductImages(categorySlug),
     specs
   };
 }
