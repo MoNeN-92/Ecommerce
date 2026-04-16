@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -33,9 +32,6 @@ export default async function LocaleLayout({
       <Header locale={normalized} session={session} />
       <main>{children}</main>
       <Footer locale={normalized} />
-      <div className="container-shell py-6 text-center text-xs text-slate-400">
-        <Link href="/admin">Admin</Link>
-      </div>
     </div>
   );
 }
