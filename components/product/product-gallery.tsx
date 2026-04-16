@@ -8,8 +8,11 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
   const [active, setActive] = useState(galleryImages[0]);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[96px_minmax(0,1fr)]">
-      <div className="order-2 grid grid-cols-4 gap-3 sm:grid-cols-5 xl:order-1 xl:grid-cols-1">
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-[2rem] border border-border bg-white p-3 sm:p-4 shadow-soft">
+        <RemoteImage src={active} alt={alt} width={900} height={900} sizes="(max-width: 1279px) 100vw, 55vw" className="aspect-square w-full rounded-[1.5rem] object-cover" priority />
+      </div>
+      <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6">
         {galleryImages.map((image) => (
           <button
             key={image}
@@ -22,9 +25,6 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             <RemoteImage src={image} alt={alt} width={200} height={200} sizes="96px" className="aspect-square w-full rounded-xl object-cover" />
           </button>
         ))}
-      </div>
-      <div className="order-1 overflow-hidden rounded-[2rem] border border-border bg-white p-3 sm:p-4 shadow-soft xl:order-2">
-        <RemoteImage src={active} alt={alt} width={900} height={900} sizes="(max-width: 1279px) 100vw, 55vw" className="aspect-square w-full rounded-[1.5rem] object-cover" priority />
       </div>
     </div>
   );

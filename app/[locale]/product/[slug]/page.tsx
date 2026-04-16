@@ -105,8 +105,6 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 {product.stock > 0 ? (normalized === "ka" ? "მარაგშია" : "In stock") : normalized === "ka" ? "ამოწურულია" : "Out of stock"}
               </span>
             </div>
-            <h1 className="mt-5 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
-            <p className="mt-4 text-base leading-8 text-slate-600">{product.shortDescription || product.description}</p>
             <div className="mt-6 grid gap-4 border-t border-border pt-6 sm:grid-cols-3">
               {quickFacts.map((item) => (
                 <div key={item.label} className="rounded-[1.5rem] bg-[#faf7f2] px-4 py-4">
@@ -147,9 +145,16 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           </div>
         </div>
 
-        <aside className="min-w-0 xl:sticky xl:top-28">
+        <aside className="min-w-0 xl:sticky xl:top-28 xl:pt-6">
           <div className="space-y-5 rounded-[2rem] border border-black/[0.06] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-            <div className="space-y-3">
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <h1 className="font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{product.name}</h1>
+                <p className="text-base leading-8 text-slate-600">{product.shortDescription || product.description}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t border-border pt-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6f3a]">
                 {normalized === "ka" ? "შეკვეთის ინფორმაცია" : "Order information"}
               </p>
