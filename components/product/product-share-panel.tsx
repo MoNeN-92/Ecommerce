@@ -100,15 +100,17 @@ export function ProductSharePanel({ locale, title, url }: ProductSharePanelProps
                 ? "გაზიარება"
                 : "Share"}
           </button>
-          <a
-            href={facebookUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-[#1877f2] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1464cf]"
-          >
-            <Link2 className="h-4 w-4" />
-            Facebook
-          </a>
+          {!supportsNativeShare ? (
+            <a
+              href={facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-[#1877f2] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1464cf]"
+            >
+              <Link2 className="h-4 w-4" />
+              Facebook
+            </a>
+          ) : null}
           <button
             type="button"
             onClick={handleWhatsAppShare}
