@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+const nullableText = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}, z.string().optional().nullable());
+
 export const productQuerySchema = z.object({
   category: z.string().optional(),
   brand: z.string().optional(),
@@ -47,11 +56,18 @@ export const productSchema = z.object({
 });
 
 export const categorySchema = z.object({
-  slug: z.string().min(2),
-  nameKa: z.string().min(2),
-  nameEn: z.string().min(2),
-  descriptionKa: z.string().optional().nullable(),
-  descriptionEn: z.string().optional().nullable(),
-  image: z.string().url().optional().nullable(),
+  slug: z.string().trim().min(2),
+  nameKa: z.string().trim().min(2),
+  nameEn: z.string().trim().min(2),
+  descriptionKa: nullableText,
+  descriptionEn: nullableText,
+  image: z.preprocess((value) => {
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }, z.string().url().optional().nullable()),
   featured: z.boolean().default(false)
 });

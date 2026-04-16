@@ -23,9 +23,20 @@ export default async function AdminCategoriesPage({
         <div className="space-y-3">
           {categories.map((category) => (
             <div key={category.id} className="flex items-center justify-between rounded-2xl border border-border p-4">
-              <div>
-                <p className="font-semibold text-slate-950">{locale === "en" ? category.nameEn : category.nameKa}</p>
-                <p className="text-sm text-slate-500">/{category.slug}</p>
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 overflow-hidden rounded-2xl border border-border bg-slate-100">
+                  {category.image ? (
+                    <img
+                      src={category.image}
+                      alt={locale === "en" ? category.nameEn : category.nameKa}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-950">{locale === "en" ? category.nameEn : category.nameKa}</p>
+                  <p className="text-sm text-slate-500">/{category.slug}</p>
+                </div>
               </div>
               <span className="text-sm text-slate-500">{category.featured ? messages.categories.featured : messages.categories.standard}</span>
             </div>
