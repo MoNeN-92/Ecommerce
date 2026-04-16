@@ -15,10 +15,42 @@ export async function GET() {
 export async function POST(request: Request) {
   await requireAdmin();
   const body = await request.json();
-  const parsed = categorySchema.safeParse(body);
+  const payload = {
+    ...body,
+    slug: typeof body.slug === "string" ? body.slug.trim() : body.slug,
+    nameKa:
+      typeof body.nameKa === "string" && body.nameKa.trim()
+        ? body.nameKa.trim()
+        : typeof body.nameEn === "string"
+          ? body.nameEn.trim()
+          : body.nameKa,
+    nameEn:
+      typeof body.nameEn === "string" && body.nameEn.trim()
+        ? body.nameEn.trim()
+        : typeof body.nameKa === "string"
+          ? body.nameKa.trim()
+          : body.nameEn,
+    descriptionKa:
+      typeof body.descriptionKa === "string" && body.descriptionKa.trim()
+        ? body.descriptionKa.trim()
+        : typeof body.descriptionEn === "string" && body.descriptionEn.trim()
+          ? body.descriptionEn.trim()
+          : null,
+    descriptionEn:
+      typeof body.descriptionEn === "string" && body.descriptionEn.trim()
+        ? body.descriptionEn.trim()
+        : typeof body.descriptionKa === "string" && body.descriptionKa.trim()
+          ? body.descriptionKa.trim()
+          : null,
+    image:
+      typeof body.image === "string" && body.image.trim() ? body.image.trim() : null
+  };
+  const parsed = categorySchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ errors: parsed.error.flatten() }, { status: 400 });
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    const firstError = Object.values(fieldErrors).flat()[0] ?? "Invalid category data";
+    return NextResponse.json({ message: firstError, errors: fieldErrors }, { status: 400 });
   }
 
   try {

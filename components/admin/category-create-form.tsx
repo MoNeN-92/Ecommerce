@@ -96,10 +96,10 @@ export function CategoryCreateForm({ locale }: { locale: AdminLocale }) {
     const payload = {
       ...form,
       slug: form.slug.trim(),
-      nameKa: form.nameKa.trim(),
-      nameEn: form.nameEn.trim(),
-      descriptionKa: form.descriptionKa.trim() || null,
-      descriptionEn: form.descriptionEn.trim() || null,
+      nameKa: form.nameKa.trim() || form.nameEn.trim(),
+      nameEn: form.nameEn.trim() || form.nameKa.trim(),
+      descriptionKa: form.descriptionKa.trim() || form.descriptionEn.trim() || null,
+      descriptionEn: form.descriptionEn.trim() || form.descriptionKa.trim() || null,
       image: form.image.trim() || null
     };
 
@@ -113,7 +113,10 @@ export function CategoryCreateForm({ locale }: { locale: AdminLocale }) {
     setLoading(false);
 
     if (!response.ok) {
-      setError(data?.message ?? messages.categories.createFailed);
+      const validationError = data?.errors
+        ? Object.values(data.errors as Record<string, string[]>).flat()[0]
+        : null;
+      setError(validationError ?? data?.message ?? messages.categories.createFailed);
       return;
     }
 
