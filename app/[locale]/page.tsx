@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Headphones, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { ProductGrid } from "@/components/product/product-grid";
+import { SaleBadge } from "@/components/product/sale-badge";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { RemoteImage } from "@/components/ui/remote-image";
@@ -148,7 +149,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   href={`/${normalized}/product/${product.slug}`}
                   className="group overflow-hidden rounded-[1.8rem] border border-black/[0.06] bg-[#fbf8f3] p-3 transition hover:-translate-y-1"
                 >
-                  <div className="overflow-hidden rounded-[1.3rem] bg-white">
+                  <div className="relative overflow-hidden rounded-[1.3rem] bg-white">
+                    <SaleBadge price={product.price} compareAtPrice={product.compareAtPrice} />
                     <RemoteImage src={product.image} alt={product.name} width={280} height={220} sizes="(max-width: 1280px) 50vw, 280px" className="h-36 w-full object-cover transition duration-500 group-hover:scale-105" />
                   </div>
                   <div className="px-1 pb-1 pt-4">
@@ -165,6 +167,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {spotlight ? (
               <div className="overflow-hidden rounded-[2.4rem] border border-black/[0.06] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
                 <div className="relative bg-[#f4efe7]">
+                  <SaleBadge price={spotlight.price} compareAtPrice={spotlight.compareAtPrice} className="left-6 top-6" />
                   <div className="absolute inset-x-16 top-6 h-24 rounded-full bg-[#b98b52]/14 blur-3xl" />
                   <RemoteImage src={spotlight.image} alt={spotlight.name} width={780} height={560} sizes="(max-width: 1280px) 100vw, 50vw" className="relative h-[360px] w-full object-cover" priority />
                 </div>
@@ -263,7 +266,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 href={`/${normalized}/product/${product.slug}`}
                 className="group flex flex-col gap-4 rounded-[2rem] border border-black/[0.06] bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 sm:flex-row sm:items-center"
               >
-                <RemoteImage src={product.image} alt={product.name} width={220} height={160} sizes="(max-width: 640px) 100vw, 220px" className="h-40 w-full rounded-[1.5rem] object-cover sm:w-48" />
+                <div className="relative">
+                  <SaleBadge price={product.price} compareAtPrice={product.compareAtPrice} />
+                  <RemoteImage src={product.image} alt={product.name} width={220} height={160} sizes="(max-width: 640px) 100vw, 220px" className="h-40 w-full rounded-[1.5rem] object-cover sm:w-48" />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9a6f3a]">{product.brand}</p>
                   <h3 className="mt-3 text-xl font-semibold text-slate-950">{product.name}</h3>
