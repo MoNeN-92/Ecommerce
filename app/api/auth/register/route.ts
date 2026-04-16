@@ -1,5 +1,6 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { getRoleForEmail } from "@/lib/auth/admin-allowlist";
 import { prisma } from "@/lib/db/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { registerSchema } from "@/lib/validators/auth";
@@ -34,7 +35,8 @@ export async function POST(request: Request) {
       email: parsed.data.email,
       password,
       phone: parsed.data.phone,
-      locale: parsed.data.locale
+      locale: parsed.data.locale,
+      role: getRoleForEmail(parsed.data.email)
     }
   });
 

@@ -1,7 +1,9 @@
+import { Role } from "@prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
+import { isAllowedAdminEmail } from "@/lib/auth/admin-allowlist";
 import { prisma } from "@/lib/db/prisma";
 import { signInSchema } from "@/lib/validators/auth";
 
@@ -41,11 +43,22 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        let role = user.role;
+
+        if (isAllowedAdminEmail(user.email) && user.role !== Role.ADMIN) {
+          const promotedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: { role: Role.ADMIN }
+          });
+
+          role = promotedUser.role;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role
         };
       }
     })
