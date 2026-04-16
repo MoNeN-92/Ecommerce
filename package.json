@@ -6,6 +6,7 @@
                     "dev":  "next dev",
                     "build":  "prisma generate \u0026\u0026 next build",
                     "start":  "next start",
+                    "start:coolify":  "node scripts/coolify-start.mjs",
                     "lint":  "next lint",
                     "seed":  "tsx prisma/seed.ts",
                     "prisma:generate":  "prisma generate",
