@@ -11,22 +11,6 @@ function buildAlternates(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories] = await Promise.all([
-    prisma.product.findMany({
-      select: {
-        slug: true,
-        updatedAt: true,
-        published: true
-      }
-    }),
-    prisma.category.findMany({
-      select: {
-        slug: true,
-        updatedAt: true
-      }
-    })
-  ]);
-
   const staticRoutes: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) => [
     {
       url: `${SITE_URL}/${locale}`,
@@ -65,27 +49,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   ]);
 
-  const categoryRoutes: MetadataRoute.Sitemap = categories.flatMap((category) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      url: `${SITE_URL}/${locale}/category/${category.slug}`,
-      lastModified: category.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-      alternates: buildAlternates(`/category/${category.slug}`)
-    }))
-  );
+  try {
+    const [products, categories] = await Promise.all([
+      prisma.product.findMany({
+        select: {
+          slug: true,
+          updatedAt: true,
+          published: true
+        }
+      }),
+      prisma.category.findMany({
+        select: {
+          slug: true,
+          updatedAt: true
+        }
+      })
+    ]);
 
-  const productRoutes: MetadataRoute.Sitemap = products
-    .filter((product) => product.published)
-    .flatMap((product) =>
+    const categoryRoutes: MetadataRoute.Sitemap = categories.flatMap((category) =>
       SUPPORTED_LOCALES.map((locale) => ({
-        url: `${SITE_URL}/${locale}/product/${product.slug}`,
-        lastModified: product.updatedAt,
+        url: `${SITE_URL}/${locale}/category/${category.slug}`,
+        lastModified: category.updatedAt,
         changeFrequency: "weekly" as const,
-        priority: 0.7,
-        alternates: buildAlternates(`/product/${product.slug}`)
+        priority: 0.8,
+        alternates: buildAlternates(`/category/${category.slug}`)
       }))
     );
 
-  return [...staticRoutes, ...categoryRoutes, ...productRoutes];
+    const productRoutes: MetadataRoute.Sitemap = products
+      .filter((product) => product.published)
+      .flatMap((product) =>
+        SUPPORTED_LOCALES.map((locale) => ({
+          url: `${SITE_URL}/${locale}/product/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+          alternates: buildAlternates(`/product/${product.slug}`)
+        }))
+      );
+
+    return [...staticRoutes, ...categoryRoutes, ...productRoutes];
+  } catch (error) {
+    console.error("Failed to generate dynamic sitemap entries", error);
+    return staticRoutes;
+  }
 }
