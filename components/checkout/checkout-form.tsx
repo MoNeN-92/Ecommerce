@@ -41,9 +41,19 @@ export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { n
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const method = params.get("method");
+    const bank = params.get("bank");
 
     if (method === "stripe" || method === "cash" || method === "installment") {
-      setForm((current) => ({ ...current, paymentProvider: method }));
+      setForm((current) => ({
+        ...current,
+        paymentProvider: method,
+        installmentBank: bank ?? current.installmentBank
+      }));
+      return;
+    }
+
+    if (bank) {
+      setForm((current) => ({ ...current, installmentBank: bank }));
     }
   }, []);
 

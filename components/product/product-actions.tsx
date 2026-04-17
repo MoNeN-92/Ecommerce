@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { InstallmentBankModal } from "@/components/product/installment-bank-modal";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart-store";
 import { useRecentlyViewedStore } from "@/store/recently-viewed-store";
@@ -15,6 +16,7 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
   const wishlist = useWishlistStore((state) => state.items);
   const toggle = useWishlistStore((state) => state.toggle);
   const pushRecent = useRecentlyViewedStore((state) => state.push);
+  const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
 
   useEffect(() => {
     pushRecent(product.slug);
@@ -44,9 +46,15 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
     stock: product.stock
   };
 
-  const beginCheckout = (method: "stripe" | "installment") => {
+  const beginCheckout = (method: "stripe" | "installment", bank?: string) => {
     addItem(cartPayload);
-    router.push(`/${locale}/checkout?method=${method}`);
+    const params = new URLSearchParams({ method });
+
+    if (bank) {
+      params.set("bank", bank);
+    }
+
+    router.push(`/${locale}/checkout?${params.toString()}`);
   };
 
   return (
@@ -59,7 +67,7 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
       </Button>
       <Button
         variant="secondary"
-        onClick={() => beginCheckout("installment")}
+        onClick={() => setIsInstallmentModalOpen(true)}
         disabled={!product.installmentAvailable}
         className="w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
         title={!product.installmentAvailable ? (locale === "ka" ? "ამ პროდუქტზე განვადება გამორთულია" : "Installments are disabled for this product") : undefined}
@@ -70,6 +78,15 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
         <Heart className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-current text-red-500" : ""}`} />
         {locale === "ka" ? "სურვილებში" : "Wishlist"}
       </Button>
+      <InstallmentBankModal
+        locale={locale}
+        open={isInstallmentModalOpen}
+        onClose={() => setIsInstallmentModalOpen(false)}
+        onSelect={(bankId) => {
+          setIsInstallmentModalOpen(false);
+          beginCheckout("installment", bankId);
+        }}
+      />
     </div>
   );
 }
