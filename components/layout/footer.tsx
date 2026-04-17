@@ -74,6 +74,9 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
             <Link href={`/${locale}/terms-of-service`} className="block transition hover:text-white">
               {locale === "ka" ? "მომსახურების პირობები" : "Terms of Service"}
             </Link>
+            <Link href={`/${locale}/delivery-returns-refunds`} className="block transition hover:text-white">
+              {locale === "ka" ? "მიწოდება და დაბრუნება" : "Delivery and Returns"}
+            </Link>
             <Link href={`/${locale}/faq`} className="block transition hover:text-white">
               FAQ
             </Link>

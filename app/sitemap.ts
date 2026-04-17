@@ -53,6 +53,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "yearly",
       priority: 0.4,
       alternates: buildAlternates("/terms-of-service")
+    },
+    {
+      url: `${SITE_URL}/${locale}/delivery-returns-refunds`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.5,
+      alternates: buildAlternates("/delivery-returns-refunds")
     }
   ]);
 
