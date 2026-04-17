@@ -8,6 +8,7 @@ import {
   COMPANY_NAME,
   DEFAULT_LOCALE,
   SITE_DESCRIPTION_EN,
+  SITE_ADDRESS_EN,
   SITE_EMAIL,
   SITE_NAME,
   SITE_PHONE,
@@ -57,6 +58,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 telephone: SITE_PHONE,
                 areaServed: "GE",
                 knowsLanguage: SUPPORTED_LOCALES,
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: SITE_ADDRESS_EN,
+                  addressCountry: "GE"
+                },
                 acceptedPaymentMethod: [
                   "https://schema.org/CreditCard",
                   "https://schema.org/ByBankTransferInAdvance"

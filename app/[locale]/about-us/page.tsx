@@ -6,6 +6,8 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import {
   COMPANY_IDENTIFIER,
   COMPANY_NAME,
+  SITE_ADDRESS_EN,
+  SITE_ADDRESS_KA,
   SITE_EMAIL,
   SITE_NAME,
   SITE_PHONE_DISPLAY,
@@ -45,6 +47,7 @@ export default async function AboutUsPage({ params }: { params: Promise<{ locale
           cards: [
             { label: "იურიდიული ფორმა", value: COMPANY_NAME },
             { label: "საიდენტიფიკაციო კოდი", value: COMPANY_IDENTIFIER },
+            { label: "მისამართი", value: SITE_ADDRESS_KA },
             { label: "ელფოსტა", value: SITE_EMAIL },
             { label: "ტელეფონი", value: SITE_PHONE_DISPLAY }
           ],
@@ -75,6 +78,7 @@ export default async function AboutUsPage({ params }: { params: Promise<{ locale
           cards: [
             { label: "Legal entity", value: COMPANY_NAME },
             { label: "Identification code", value: COMPANY_IDENTIFIER },
+            { label: "Address", value: SITE_ADDRESS_EN },
             { label: "Email", value: SITE_EMAIL },
             { label: "Phone", value: SITE_PHONE_DISPLAY }
           ],
@@ -168,7 +172,12 @@ export default async function AboutUsPage({ params }: { params: Promise<{ locale
               name: COMPANY_NAME,
               taxID: COMPANY_IDENTIFIER,
               email: SITE_EMAIL,
-              telephone: SITE_PHONE_DISPLAY
+              telephone: SITE_PHONE_DISPLAY,
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: normalized === "ka" ? SITE_ADDRESS_KA : SITE_ADDRESS_EN,
+                addressCountry: "GE"
+              }
             }
           },
           {

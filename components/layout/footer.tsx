@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { COMPANY_IDENTIFIER, COMPANY_NAME, SITE_EMAIL, SITE_NAME, SITE_PHONE_DISPLAY } from "@/lib/site";
+import {
+  COMPANY_IDENTIFIER,
+  COMPANY_NAME,
+  SITE_ADDRESS_EN,
+  SITE_ADDRESS_KA,
+  SITE_EMAIL,
+  SITE_NAME,
+  SITE_PHONE_DISPLAY
+} from "@/lib/site";
 
 export function Footer({ locale }: { locale: "ka" | "en" }) {
   return (
@@ -34,6 +42,7 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
           <div className="mt-4 space-y-3 text-sm text-slate-300">
             <p>{COMPANY_NAME}</p>
             <p>{locale === "ka" ? `საიდენტიფიკაციო კოდი: ${COMPANY_IDENTIFIER}` : `Identification code: ${COMPANY_IDENTIFIER}`}</p>
+            <p>{locale === "ka" ? SITE_ADDRESS_KA : SITE_ADDRESS_EN}</p>
             <p>{SITE_EMAIL}</p>
             <p>{SITE_PHONE_DISPLAY}</p>
             <Link href={`/${locale}/about-us`} className="block transition hover:text-white">
