@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { SITE_EMAIL, SITE_NAME, SITE_PHONE, SITE_URL } from "@/lib/site";
+import { SITE_EMAIL, SITE_NAME, SITE_PHONE_DISPLAY, SITE_URL } from "@/lib/site";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     path: `/${normalized}/faq`,
     keywords:
       normalized === "ka"
-        ? ["FAQ", "ხშირად დასმული კითხვები", "მიწოდება", "განვადება", "TechStore Georgia"]
-        : ["FAQ", "frequently asked questions", "delivery", "installments", "TechStore Georgia"]
+        ? ["FAQ", "ხშირად დასმული კითხვები", "მიწოდება", "განვადება", "Joker Shops"]
+        : ["FAQ", "frequently asked questions", "delivery", "installments", "Joker Shops"]
   });
 }
 
@@ -56,7 +56,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
             },
             {
               question: "როგორ დაგიკავშირდეთ?",
-              answer: `დაგვიკავშირდით ელფოსტაზე ${SITE_EMAIL} ან ტელეფონზე ${SITE_PHONE}.`
+              answer: `დაგვიკავშირდით ელფოსტაზე ${SITE_EMAIL} ან ტელეფონზე ${SITE_PHONE_DISPLAY}.`
             }
           ],
           related: {
@@ -91,7 +91,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
             },
             {
               question: "How can I contact you?",
-              answer: `Contact us at ${SITE_EMAIL} or ${SITE_PHONE}.`
+              answer: `Contact us at ${SITE_EMAIL} or ${SITE_PHONE_DISPLAY}.`
             }
           ],
           related: {

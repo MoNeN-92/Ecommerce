@@ -27,6 +27,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       alternates: buildAlternates("/products")
     },
     {
+      url: `${SITE_URL}/${locale}/about-us`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+      alternates: buildAlternates("/about-us")
+    },
+    {
       url: `${SITE_URL}/${locale}/faq`,
       lastModified: new Date(),
       changeFrequency: "monthly",

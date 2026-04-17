@@ -20,8 +20,8 @@ export function Header({ locale, session }: { locale: "ka" | "en"; session: Sess
               <Cpu className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <p className="truncate font-display text-base font-semibold tracking-[0.1em] text-slate-950 sm:text-lg sm:tracking-[0.12em]">TechStore</p>
-              <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs sm:tracking-[0.28em]">Georgia</p>
+              <p className="truncate font-display text-base font-semibold tracking-[0.1em] text-slate-950 sm:text-lg sm:tracking-[0.12em]">Joker</p>
+              <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs sm:tracking-[0.28em]">Shops</p>
             </div>
           </Link>
 

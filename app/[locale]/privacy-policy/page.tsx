@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { SITE_EMAIL, SITE_NAME, SITE_PHONE, SITE_URL } from "@/lib/site";
+import { COMPANY_IDENTIFIER, COMPANY_NAME, SITE_EMAIL, SITE_NAME, SITE_PHONE_DISPLAY, SITE_URL } from "@/lib/site";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: normalized === "ka" ? "კონფიდენციალურობის პოლიტიკა" : "Privacy Policy",
     description:
       normalized === "ka"
-        ? "გაეცანით როგორ აგროვებს, ინახავს და ამუშავებს TechStore Georgia მომხმარებლის მონაცემებს."
-        : "Learn how TechStore Georgia collects, stores, and processes customer data.",
+        ? "გაეცანით როგორ აგროვებს, ინახავს და ამუშავებს Joker Shops მომხმარებლის მონაცემებს."
+        : "Learn how Joker Shops collects, stores, and processes customer data.",
     path: `/${normalized}/privacy-policy`,
     keywords:
       normalized === "ka"
-        ? ["კონფიდენციალურობის პოლიტიკა", "პერსონალური მონაცემები", "cookies", "TechStore Georgia"]
-        : ["privacy policy", "personal data", "cookies", "TechStore Georgia"]
+        ? ["კონფიდენციალურობის პოლიტიკა", "პერსონალური მონაცემები", "cookies", "Joker Shops"]
+        : ["privacy policy", "personal data", "cookies", "Joker Shops"]
   });
 }
 
@@ -40,6 +40,13 @@ export default async function PrivacyPolicyPage({
             "ეს გვერდი აღწერს რა ინფორმაციას ვაგროვებთ, რისთვის ვიყენებთ მას და როგორ შეგიძლიათ თქვენი მონაცემების მართვა.",
           updated: "ბოლო განახლება: 16 აპრილი, 2026",
           sections: [
+            {
+              title: "კომპანიის მონაცემები",
+              paragraphs: [
+                `${COMPANY_NAME}, საიდენტიფიკაციო კოდი ${COMPANY_IDENTIFIER}.`,
+                `საკონტაქტო მონაცემები: ${SITE_EMAIL}, ${SITE_PHONE_DISPLAY}.`
+              ]
+            },
             {
               title: "რა ინფორმაციას ვაგროვებთ",
               paragraphs: [
@@ -65,7 +72,7 @@ export default async function PrivacyPolicyPage({
               title: "თქვენი უფლებები",
               paragraphs: [
                 "შეგიძლიათ მოითხოვოთ თქვენი მონაცემების ნახვა, კორექტირება, განახლება ან წაშლა, თუ ეს ეწინააღმდეგება არა კანონიერ საბუღალტრო ან საგადასახადო ვალდებულებებს.",
-                `ამ საკითხებზე დაგვიკავშირდით: ${SITE_EMAIL} ან ${SITE_PHONE}.`
+                `ამ საკითხებზე დაგვიკავშირდით: ${SITE_EMAIL} ან ${SITE_PHONE_DISPLAY}.`
               ]
             }
           ],
@@ -81,6 +88,13 @@ export default async function PrivacyPolicyPage({
             "This page explains what information we collect, how we use it, and how you can manage your personal data.",
           updated: "Last updated: April 16, 2026",
           sections: [
+            {
+              title: "Company details",
+              paragraphs: [
+                `${COMPANY_NAME}, identification code ${COMPANY_IDENTIFIER}.`,
+                `Contact details: ${SITE_EMAIL}, ${SITE_PHONE_DISPLAY}.`
+              ]
+            },
             {
               title: "What we collect",
               paragraphs: [
@@ -106,7 +120,7 @@ export default async function PrivacyPolicyPage({
               title: "Your rights",
               paragraphs: [
                 "You may request access, correction, update, or deletion of your personal data where this does not conflict with legal accounting or tax obligations.",
-                `For privacy requests, contact us at ${SITE_EMAIL} or ${SITE_PHONE}.`
+                `For privacy requests, contact us at ${SITE_EMAIL} or ${SITE_PHONE_DISPLAY}.`
               ]
             }
           ],

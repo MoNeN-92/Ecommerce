@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { COMPANY_IDENTIFIER, COMPANY_NAME, SITE_EMAIL, SITE_NAME, SITE_PHONE_DISPLAY } from "@/lib/site";
 
 export function Footer({ locale }: { locale: "ka" | "en" }) {
   return (
     <footer className="mt-24 border-t border-black/[0.06] bg-[#111827] text-white">
       <div className="container-shell grid gap-8 py-12 sm:gap-10 sm:py-16 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr]">
         <div>
-          <p className="font-display text-2xl font-semibold tracking-[0.12em] text-white">TechStore Georgia</p>
+          <p className="font-display text-2xl font-semibold tracking-[0.12em] text-white">{SITE_NAME}</p>
           <p className="mt-4 max-w-sm text-sm leading-7 text-slate-300">
             {locale === "ka"
-              ? "ონლაინ მაღაზია ტექნიკისა და აქსესუარებისთვის, სწრაფი მიწოდებითა და სანდო მომსახურებით."
-              : "An online store for electronics and accessories with fast delivery and dependable service."}
+              ? "ტექნიკისა და აქსესუარების ონლაინ მაღაზია უსაფრთხო შეკვეთით, მკაფიო პირობებითა და სწრაფი მიწოდებით."
+              : "An online store for electronics and accessories with secure ordering, clear terms, and fast delivery."}
           </p>
         </div>
         <div>
@@ -31,9 +32,13 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
             {locale === "ka" ? "კომპანია" : "Company"}
           </h3>
           <div className="mt-4 space-y-3 text-sm text-slate-300">
-            <p>Tbilisi, Georgia</p>
-            <p>support@teqstore.ge</p>
-            <p>+995 555 00 01 11</p>
+            <p>{COMPANY_NAME}</p>
+            <p>{locale === "ka" ? `საიდენტიფიკაციო კოდი: ${COMPANY_IDENTIFIER}` : `Identification code: ${COMPANY_IDENTIFIER}`}</p>
+            <p>{SITE_EMAIL}</p>
+            <p>{SITE_PHONE_DISPLAY}</p>
+            <Link href={`/${locale}/about-us`} className="block transition hover:text-white">
+              {locale === "ka" ? "კომპანიის შესახებ" : "About Us"}
+            </Link>
           </div>
         </div>
         <div>
@@ -51,6 +56,9 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
             {locale === "ka" ? "იურიდიული" : "Legal"}
           </h3>
           <div className="mt-4 space-y-3 text-sm text-slate-300">
+            <Link href={`/${locale}/about-us`} className="block transition hover:text-white">
+              {locale === "ka" ? "კომპანიის შესახებ" : "About Us"}
+            </Link>
             <Link href={`/${locale}/privacy-policy`} className="block transition hover:text-white">
               {locale === "ka" ? "კონფიდენციალურობა" : "Privacy Policy"}
             </Link>

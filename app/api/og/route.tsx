@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   );
   const eyebrow =
     searchParams.get("eyebrow") ||
-    (locale === "ka" ? "TechStore Georgia" : "TechStore Georgia");
+    SITE_NAME;
 
   return new ImageResponse(
     (

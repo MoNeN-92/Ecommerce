@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
+  COMPANY_IDENTIFIER,
   COMPANY_NAME,
   DEFAULT_LOCALE,
   SITE_DESCRIPTION_EN,
@@ -50,11 +51,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 "@type": "OnlineStore",
                 name: COMPANY_NAME,
                 url: SITE_URL,
+                taxID: COMPANY_IDENTIFIER,
                 email: SITE_EMAIL,
                 telephone: SITE_PHONE,
                 currenciesAccepted: "GEL",
                 availableLanguage: SUPPORTED_LOCALES,
-                areaServed: "GE"
+                areaServed: "GE",
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  email: SITE_EMAIL,
+                  telephone: SITE_PHONE,
+                  contactType: "customer support",
+                  areaServed: "GE",
+                  availableLanguage: SUPPORTED_LOCALES
+                }
               },
               {
                 "@context": "https://schema.org",

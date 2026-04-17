@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/seo/json-ld";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { SITE_EMAIL, SITE_NAME, SITE_PHONE, SITE_URL } from "@/lib/site";
+import { COMPANY_IDENTIFIER, COMPANY_NAME, SITE_EMAIL, SITE_NAME, SITE_PHONE_DISPLAY, SITE_URL } from "@/lib/site";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     path: `/${normalized}/terms-of-service`,
     keywords:
       normalized === "ka"
-        ? ["მომსახურების პირობები", "შეკვეთის პირობები", "ონლაინ მაღაზია", "TechStore Georgia"]
-        : ["terms of service", "order terms", "online store", "TechStore Georgia"]
+        ? ["მომსახურების პირობები", "შეკვეთის პირობები", "ონლაინ მაღაზია", "Joker Shops"]
+        : ["terms of service", "order terms", "online store", "Joker Shops"]
   });
 }
 
@@ -40,6 +40,13 @@ export default async function TermsOfServicePage({
             "საიტზე შეკვეთის განთავსებით ან ადმინისტრაციულად ინვოისის შექმნით, ეთანხმებით ქვემოთ აღწერილ ძირითად პირობებს.",
           updated: "ბოლო განახლება: 16 აპრილი, 2026",
           sections: [
+            {
+              title: "კომპანიის მონაცემები",
+              paragraphs: [
+                `${COMPANY_NAME}, საიდენტიფიკაციო კოდი ${COMPANY_IDENTIFIER}.`,
+                `საკონტაქტო მონაცემები: ${SITE_EMAIL}, ${SITE_PHONE_DISPLAY}.`
+              ]
+            },
             {
               title: "შეკვეთები და დადასტურება",
               paragraphs: [
@@ -65,7 +72,7 @@ export default async function TermsOfServicePage({
               title: "პასუხისმგებლობა",
               paragraphs: [
                 "კომპანია პასუხს აგებს მხოლოდ იმ ზიანზე, რომელიც პირდაპირ უკავშირდება დადასტურებულ შეკვეთასა და მიწოდებას მოქმედი კანონმდებლობის ფარგლებში.",
-                `ნებისმიერი საკითხის დასაზუსტებლად დაგვიკავშირდით: ${SITE_EMAIL} ან ${SITE_PHONE}.`
+                `ნებისმიერი საკითხის დასაზუსტებლად დაგვიკავშირდით: ${SITE_EMAIL} ან ${SITE_PHONE_DISPLAY}.`
               ]
             }
           ],
@@ -81,6 +88,13 @@ export default async function TermsOfServicePage({
             "By placing an order on the site or generating an administrative invoice, you agree to the core terms described below.",
           updated: "Last updated: April 16, 2026",
           sections: [
+            {
+              title: "Company details",
+              paragraphs: [
+                `${COMPANY_NAME}, identification code ${COMPANY_IDENTIFIER}.`,
+                `Contact details: ${SITE_EMAIL}, ${SITE_PHONE_DISPLAY}.`
+              ]
+            },
             {
               title: "Orders and confirmation",
               paragraphs: [
@@ -106,7 +120,7 @@ export default async function TermsOfServicePage({
               title: "Liability",
               paragraphs: [
                 "The company is responsible only for damages directly related to a confirmed order and delivery within the limits of applicable law.",
-                `For clarification, contact ${SITE_EMAIL} or ${SITE_PHONE}.`
+                `For clarification, contact ${SITE_EMAIL} or ${SITE_PHONE_DISPLAY}.`
               ]
             }
           ],
