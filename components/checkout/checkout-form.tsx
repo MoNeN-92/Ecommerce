@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { InstallmentBankLogo } from "@/components/shared/installment-bank-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { INSTALLMENT_BANKS, getInstallmentBankInfo } from "@/lib/installment-banks";
 import { useCartStore } from "@/store/cart-store";
 
 export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { name?: string | null; email?: string | null; phone?: string | null } | null }) {
@@ -37,6 +39,7 @@ export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { n
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const selectedBank = getInstallmentBankInfo(form.installmentBank);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -136,11 +139,40 @@ export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { n
           </Select>
           {form.paymentProvider === "installment" ? (
             <>
-              <Select value={form.installmentBank} onChange={(event) => setField("installmentBank", event.target.value)}>
-                <option value="TBC Bank">TBC Bank</option>
-                <option value="Bank of Georgia">Bank of Georgia</option>
-                <option value="Credo">Credo</option>
-              </Select>
+              <div className="md:col-span-2 space-y-3">
+                <p className="text-sm font-semibold text-slate-950">
+                  {locale === "ka" ? "აირჩიეთ ბანკი" : "Choose a bank"}
+                </p>
+                <div className="grid gap-3">
+                  {INSTALLMENT_BANKS.map((bank) => {
+                    const isSelected = form.installmentBank === bank.id;
+
+                    return (
+                      <button
+                        key={bank.id}
+                        type="button"
+                        onClick={() => setField("installmentBank", bank.id)}
+                        className={`flex items-center gap-4 rounded-[1.5rem] border p-4 text-left transition ${isSelected ? bank.panelClass : "border-border bg-white hover:border-slate-300 hover:bg-slate-50"}`}
+                      >
+                        <InstallmentBankLogo bankId={bank.id} className="shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-950">
+                            {locale === "ka" ? bank.nameKa : bank.nameEn}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {locale === "ka"
+                              ? "განვადების განაცხადი გაგრძელდება არჩეული ბანკის მიხედვით"
+                              : "The installment request will continue with the selected bank"}
+                          </p>
+                        </div>
+                        <div className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${bank.badgeClass}`}>
+                          {bank.shortName}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <Select value={form.installmentMonths} onChange={(event) => setField("installmentMonths", event.target.value)}>
                 <option value="3">3 {locale === "ka" ? "თვე" : "months"}</option>
                 <option value="6">6 {locale === "ka" ? "თვე" : "months"}</option>
@@ -148,10 +180,28 @@ export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { n
                 <option value="18">18 {locale === "ka" ? "თვე" : "months"}</option>
                 <option value="24">24 {locale === "ka" ? "თვე" : "months"}</option>
               </Select>
-              <div className="md:col-span-2 rounded-[1.5rem] border border-[#b98b52]/20 bg-[#fbf6ee] px-4 py-4 text-sm leading-7 text-slate-600">
-                {locale === "ka"
-                  ? `განვადების ონლაინ მოთხოვნა შეიქმნება ${form.installmentBank}-ისთვის. დაახლოებით ${(pricing.total / Number(form.installmentMonths || 12)).toFixed(2)} GEL / თვეში.`
-                  : `An online installment request will be created for ${form.installmentBank}. Estimated monthly payment: ${(pricing.total / Number(form.installmentMonths || 12)).toFixed(2)} GEL / month.`}
+              <div className={`md:col-span-2 rounded-[1.5rem] border px-4 py-4 text-sm leading-7 text-slate-700 ${selectedBank.panelClass}`}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {locale === "ka" ? "არჩეული ბანკი" : "Selected bank"}
+                    </p>
+                    <p className="text-base font-semibold text-slate-950">
+                      {locale === "ka" ? selectedBank.nameKa : selectedBank.nameEn}
+                    </p>
+                    <p>
+                      {locale === "ka"
+                        ? `განვადების განაცხადი შეიქმნება ${selectedBank.nameKa}-ის მიმართულებით.`
+                        : `The installment request will be prepared for ${selectedBank.nameEn}.`}
+                    </p>
+                  </div>
+                  <InstallmentBankLogo bankId={selectedBank.id} className="w-fit" />
+                </div>
+                <div className="mt-4 rounded-[1.25rem] bg-white/70 px-4 py-3">
+                  {locale === "ka"
+                    ? `სავარაუდო თვიური გადასახადი ${form.installmentMonths} თვეზე იქნება დაახლოებით ${(pricing.total / Number(form.installmentMonths || 12)).toFixed(2)} GEL. საბოლოო პირობები განისაზღვრება ბანკის მხრიდან.`
+                    : `The estimated monthly payment over ${form.installmentMonths} months is about ${(pricing.total / Number(form.installmentMonths || 12)).toFixed(2)} GEL. Final terms are determined by the bank.`}
+                </div>
               </div>
             </>
           ) : null}
@@ -167,6 +217,19 @@ export function CheckoutForm({ locale, user }: { locale: "ka" | "en"; user?: { n
           <div className="flex justify-between"><span>Subtotal</span><span>{pricing.subtotal.toFixed(2)} GEL</span></div>
           <div className="flex justify-between"><span>{locale === "ka" ? "Discount" : "Discount"}</span><span>{pricing.discount.toFixed(2)} GEL</span></div>
           <div className="flex justify-between"><span>Shipping</span><span>{pricing.shipping.toFixed(2)} GEL</span></div>
+          {form.paymentProvider === "installment" ? (
+            <div className="rounded-[1.4rem] border border-border bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                {locale === "ka" ? "განვადების არხი" : "Installment channel"}
+              </p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <InstallmentBankLogo bankId={selectedBank.id} className="max-w-[180px]" />
+                <div className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${selectedBank.badgeClass}`}>
+                  {selectedBank.shortName}
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className="flex justify-between border-t border-border pt-3 text-base font-semibold text-slate-950"><span>Total</span><span>{pricing.total.toFixed(2)} GEL</span></div>
         </div>
       </div>

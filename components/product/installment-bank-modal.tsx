@@ -1,43 +1,9 @@
 "use client";
 
 import { X } from "lucide-react";
+import { InstallmentBankLogo } from "@/components/shared/installment-bank-logo";
 import { Button } from "@/components/ui/button";
-
-type InstallmentBank = {
-  id: string;
-  nameKa: string;
-  nameEn: string;
-  accentClass: string;
-  markClass: string;
-  markText: string;
-};
-
-const BANKS: InstallmentBank[] = [
-  {
-    id: "TBC Bank",
-    nameKa: "თიბისი ბანკი",
-    nameEn: "TBC Bank",
-    accentClass: "border-[#00a3e0]/25 bg-[#ecf9ff] hover:border-[#00a3e0]/50 hover:bg-[#e0f5ff]",
-    markClass: "bg-[#00a3e0] text-white",
-    markText: "TBC"
-  },
-  {
-    id: "Bank of Georgia",
-    nameKa: "საქართველოს ბანკი",
-    nameEn: "Bank of Georgia",
-    accentClass: "border-[#ff6a00]/25 bg-[#fff5eb] hover:border-[#ff6a00]/50 hover:bg-[#ffefe0]",
-    markClass: "bg-[#ff6a00] text-white",
-    markText: "BOG"
-  },
-  {
-    id: "Credo",
-    nameKa: "კრედო ბანკი",
-    nameEn: "Credo Bank",
-    accentClass: "border-[#f2b705]/25 bg-[#fffbea] hover:border-[#f2b705]/50 hover:bg-[#fff5d1]",
-    markClass: "bg-[#f2b705] text-slate-950",
-    markText: "CR"
-  }
-];
+import { INSTALLMENT_BANKS } from "@/lib/installment-banks";
 
 export function InstallmentBankModal({
   locale,
@@ -85,16 +51,14 @@ export function InstallmentBankModal({
         </div>
 
         <div className="mt-6 grid gap-3">
-          {BANKS.map((bank) => (
+          {INSTALLMENT_BANKS.map((bank) => (
             <button
               key={bank.id}
               type="button"
               onClick={() => onSelect(bank.id)}
               className={`flex w-full items-center gap-4 rounded-[1.6rem] border p-4 text-left transition ${bank.accentClass}`}
             >
-              <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-[1.1rem] text-sm font-bold tracking-[0.08em] ${bank.markClass}`}>
-                {bank.markText}
-              </div>
+              <InstallmentBankLogo bankId={bank.id} className="shrink-0" />
               <div className="min-w-0">
                 <p className="text-base font-semibold text-slate-950">{locale === "ka" ? bank.nameKa : bank.nameEn}</p>
                 <p className="mt-1 text-sm text-slate-600">
@@ -102,6 +66,9 @@ export function InstallmentBankModal({
                     ? "გადადით განვადების განაცხადის გაგრძელებაზე"
                     : "Continue to the installment request flow"}
                 </p>
+              </div>
+              <div className={`ml-auto hidden rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] sm:block ${bank.badgeClass}`}>
+                {bank.shortName}
               </div>
             </button>
           ))}
