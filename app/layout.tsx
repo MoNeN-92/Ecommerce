@@ -49,14 +49,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               {
                 "@context": "https://schema.org",
                 "@type": "OnlineStore",
-                name: COMPANY_NAME,
+                name: SITE_NAME,
+                legalName: COMPANY_NAME,
                 url: SITE_URL,
                 taxID: COMPANY_IDENTIFIER,
                 email: SITE_EMAIL,
                 telephone: SITE_PHONE,
-                currenciesAccepted: "GEL",
-                availableLanguage: SUPPORTED_LOCALES,
                 areaServed: "GE",
+                knowsLanguage: SUPPORTED_LOCALES,
+                acceptedPaymentMethod: [
+                  "https://schema.org/CreditCard",
+                  "https://schema.org/ByBankTransferInAdvance"
+                ],
                 contactPoint: {
                   "@type": "ContactPoint",
                   email: SITE_EMAIL,
