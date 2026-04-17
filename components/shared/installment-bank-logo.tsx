@@ -14,10 +14,10 @@ function TbcLogo() {
 
 function BogLogo() {
   return (
-    <svg viewBox="0 0 180 40" className="h-10 w-auto" aria-hidden="true">
-      <rect width="180" height="40" rx="12" fill="#FF6A00" />
+    <svg viewBox="0 0 222 40" className="h-10 w-auto" aria-hidden="true">
+      <rect width="222" height="40" rx="12" fill="#FF6A00" />
       <circle cx="24" cy="20" r="11" fill="#fff" opacity="0.95" />
-      <text x="45" y="25" fill="#fff" fontSize="16" fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.4">
+      <text x="45" y="25" fill="#fff" fontSize="13.5" fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.4">
         BANK OF GEORGIA
       </text>
     </svg>
@@ -26,9 +26,11 @@ function BogLogo() {
 
 function CredoLogo() {
   return (
-    <svg viewBox="0 0 150 40" className="h-10 w-auto" aria-hidden="true">
-      <rect width="150" height="40" rx="12" fill="#F2B705" />
-      <text x="18" y="25" fill="#122033" fontSize="18" fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.8">
+    <svg viewBox="0 0 170 40" className="h-10 w-auto" aria-hidden="true">
+      <rect width="170" height="40" rx="12" fill="#FFD42A" />
+      <circle cx="23" cy="20" r="9" fill="#122033" />
+      <circle cx="23" cy="20" r="4" fill="#FFD42A" />
+      <text x="40" y="25" fill="#122033" fontSize="17" fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.6">
         CREDO BANK
       </text>
     </svg>
