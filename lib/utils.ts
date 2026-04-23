@@ -87,6 +87,38 @@ export function generateSku(brand: string, name: string) {
   return [brandCode, nameCode].filter(Boolean).join("-");
 }
 
+export function ensureProductSlug(value: string, fallbackSource: string) {
+  const direct = slugify(value);
+
+  if (direct.length >= 3) {
+    return direct;
+  }
+
+  const fallback = slugify(fallbackSource);
+
+  if (fallback.length >= 3) {
+    return fallback;
+  }
+
+  return `product-${Date.now().toString().slice(-6)}`;
+}
+
+export function ensureProductSku(value: string, brand: string, name: string) {
+  const direct = value.trim().toUpperCase();
+
+  if (direct.length >= 3) {
+    return direct;
+  }
+
+  const generated = generateSku(brand, name);
+
+  if (generated.length >= 3) {
+    return generated;
+  }
+
+  return `PRD-${Date.now().toString().slice(-6)}`;
+}
+
 export function generateOrderNumber() {
   const now = new Date();
   const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(

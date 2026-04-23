@@ -49,19 +49,19 @@ export const productQuerySchema = z.object({
 });
 
 export const productSchema = z.object({
-  slug: z.string().min(3),
-  sku: z.string().min(3),
-  nameKa: z.string().min(2),
-  nameEn: z.string().min(2),
+  slug: z.string().min(3, "Slug must be at least 3 characters"),
+  sku: z.string().min(3, "SKU must be at least 3 characters"),
+  nameKa: z.string().min(2, "Name KA must be at least 2 characters"),
+  nameEn: z.string().min(2, "Name EN must be at least 2 characters"),
   shortDescriptionKa: z.string().optional().nullable(),
   shortDescriptionEn: z.string().optional().nullable(),
-  descriptionKa: z.string().min(10),
-  descriptionEn: z.string().min(10),
+  descriptionKa: z.string().min(10, "Description KA must be at least 10 characters"),
+  descriptionEn: z.string().min(10, "Description EN must be at least 10 characters"),
   seoTitleKa: z.string().optional().nullable(),
   seoTitleEn: z.string().optional().nullable(),
   seoDescriptionKa: z.string().optional().nullable(),
   seoDescriptionEn: z.string().optional().nullable(),
-  brand: z.string().min(2),
+  brand: z.string().min(2, "Brand must be at least 2 characters"),
   price: z.coerce.number().min(0),
   compareAtPrice: z.coerce.number().min(0).optional().nullable(),
   stock: z.coerce.number().int().min(0),
@@ -70,7 +70,7 @@ export const productSchema = z.object({
   topProduct: booleanish.default(false),
   installmentAvailable: booleanish.default(true),
   categoryId: z.string().cuid(),
-  images: z.array(z.string().url()).min(1),
+  images: z.array(z.string().url()).min(1, "Add at least one image"),
   metaKeywords: z.array(z.string()).default([]),
   specs: z.record(z.string(), z.string())
 });

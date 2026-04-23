@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
+import { ensureProductSku, ensureProductSlug } from "@/lib/utils";
 import { productSchema } from "@/lib/validators/catalog";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -17,10 +18,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   await requireAdmin();
   const { id } = await params;
   const body = await request.json();
+  const rawNameKa = typeof body.nameKa === "string" ? body.nameKa.trim() : "";
+  const rawNameEn = typeof body.nameEn === "string" ? body.nameEn.trim() : "";
+  const resolvedName = rawNameEn || rawNameKa || (typeof body.brand === "string" ? body.brand.trim() : "") || "product";
+  const resolvedBrand = typeof body.brand === "string" ? body.brand.trim() : "";
   const payload = {
     ...body,
-    slug: typeof body.slug === "string" ? body.slug.trim() : body.slug,
-    sku: typeof body.sku === "string" ? body.sku.trim() : body.sku,
+    slug: ensureProductSlug(typeof body.slug === "string" ? body.slug : "", resolvedName),
+    sku: ensureProductSku(typeof body.sku === "string" ? body.sku : "", resolvedBrand, resolvedName),
     nameKa:
       typeof body.nameKa === "string" && body.nameKa.trim()
         ? body.nameKa.trim()
@@ -73,7 +78,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       typeof body.seoDescriptionEn === "string" && body.seoDescriptionEn.trim()
         ? body.seoDescriptionEn.trim()
         : null,
-    brand: typeof body.brand === "string" ? body.brand.trim() : body.brand,
+    brand: resolvedBrand,
     images: Array.isArray(body.images)
       ? body.images.map((item: unknown) => (typeof item === "string" ? item.trim() : item)).filter(Boolean)
       : body.images,
