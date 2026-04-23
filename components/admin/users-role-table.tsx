@@ -5,6 +5,7 @@ import type { Role } from "@prisma/client";
 import type { AdminLocale } from "@/lib/i18n/admin";
 import { getAdminMessages } from "@/lib/i18n/admin";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 
 type UserRow = {
@@ -28,6 +29,7 @@ export function UsersRoleTable({
   const [roles, setRoles] = useState<Record<string, Role>>(
     Object.fromEntries(users.map((user) => [user.id, user.role]))
   );
+  const [passwords, setPasswords] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,41 @@ export function UsersRoleTable({
     }
   };
 
+  const resetPassword = async (userId: string) => {
+    const nextPassword = passwords[userId]?.trim() ?? "";
+
+    if (nextPassword.length < 8) {
+      setMessage(null);
+      setError(messages.users.passwordTooShort);
+      return;
+    }
+
+    setLoadingId(`password:${userId}`);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: nextPassword })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? messages.users.updateFailed);
+      }
+
+      setPasswords((current) => ({ ...current, [userId]: "" }));
+      setMessage(messages.users.passwordUpdated);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : messages.users.updateFailed);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4 rounded-[2rem] border border-border bg-white p-6 shadow-soft">
       {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
@@ -72,6 +109,7 @@ export function UsersRoleTable({
               <th className="px-3 py-3">{messages.users.createdAt}</th>
               <th className="px-3 py-3">{messages.users.effectiveRole}</th>
               <th className="px-3 py-3">{messages.users.role}</th>
+              <th className="px-3 py-3">{messages.users.newPassword}</th>
               <th className="px-3 py-3" />
             </tr>
           </thead>
@@ -118,13 +156,35 @@ export function UsersRoleTable({
                   </td>
                   <td className="px-3 py-4">
                     {!isSuperAdmin ? (
-                      <Button
-                        variant="secondary"
-                        onClick={() => void saveRole(user.id)}
-                        disabled={loadingId === user.id}
-                      >
-                        {loadingId === user.id ? messages.users.saving : messages.users.save}
-                      </Button>
+                      <Input
+                        type="password"
+                        value={passwords[user.id] ?? ""}
+                        placeholder={messages.users.passwordPlaceholder}
+                        onChange={(event) =>
+                          setPasswords((current) => ({ ...current, [user.id]: event.target.value }))
+                        }
+                        className="min-w-[180px]"
+                      />
+                    ) : null}
+                  </td>
+                  <td className="px-3 py-4">
+                    {!isSuperAdmin ? (
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          variant="secondary"
+                          onClick={() => void saveRole(user.id)}
+                          disabled={loadingId === user.id || loadingId === `password:${user.id}`}
+                        >
+                          {loadingId === user.id ? messages.users.saving : messages.users.save}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => void resetPassword(user.id)}
+                          disabled={loadingId === user.id || loadingId === `password:${user.id}`}
+                        >
+                          {loadingId === `password:${user.id}` ? messages.users.resettingPassword : messages.users.resetPassword}
+                        </Button>
+                      </div>
                     ) : null}
                   </td>
                 </tr>
