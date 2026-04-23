@@ -59,22 +59,22 @@ export function ProductActions({ product, locale }: { product: ProductDetailItem
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      <Button onClick={() => addItem(cartPayload)} className="w-full sm:w-auto">
+      <Button onClick={() => addItem(cartPayload)} className="order-1 w-full sm:order-none sm:w-auto">
         {locale === "ka" ? "კალათაში დამატება" : "Add to cart"}
-      </Button>
-      <Button variant="secondary" onClick={() => beginCheckout("stripe")} className="w-full sm:w-auto">
-        {locale === "ka" ? "ონლაინ ყიდვა" : "Buy online"}
       </Button>
       <Button
         variant="secondary"
         onClick={() => setIsInstallmentModalOpen(true)}
         disabled={!product.installmentAvailable}
-        className="w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
+        className="order-2 w-full border-[#b98b52]/25 bg-[#fbf6ee] text-slate-950 hover:bg-[#f6eddf] disabled:cursor-not-allowed disabled:opacity-55 sm:order-none sm:w-auto"
         title={!product.installmentAvailable ? (locale === "ka" ? "ამ პროდუქტზე განვადება გამორთულია" : "Installments are disabled for this product") : undefined}
       >
         {locale === "ka" ? "ონლაინ განვადება" : "Online installments"}
       </Button>
-      <Button variant="ghost" onClick={toggleWishlist} className="w-full gap-2 sm:w-auto">
+      <Button variant="secondary" onClick={() => beginCheckout("stripe")} className="order-3 w-full sm:order-none sm:w-auto">
+        {locale === "ka" ? "ონლაინ ყიდვა" : "Buy online"}
+      </Button>
+      <Button variant="ghost" onClick={toggleWishlist} className="order-4 w-full gap-2 sm:order-none sm:w-auto">
         <Heart className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-current text-red-500" : ""}`} />
         {locale === "ka" ? "სურვილებში" : "Wishlist"}
       </Button>

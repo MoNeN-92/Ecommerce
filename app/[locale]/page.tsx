@@ -55,24 +55,32 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const stats =
     normalized === "ka"
       ? [
-          { value: "48h", label: "საშუალო სწრაფი მიწოდება" },
+          { value: "0 ₾", label: "თბილისში უფასო კურიერი" },
           { value: "100+", label: "შერჩეული პროდუქტი" },
           { value: "4.9/5", label: "კმაყოფილი მომხმარებლები" }
         ]
       : [
-          { value: "48h", label: "Average fast delivery" },
+          { value: "0 GEL", label: "Free courier in Tbilisi" },
           { value: "100+", label: "Curated products" },
           { value: "4.9/5", label: "Customer satisfaction" }
         ];
   const servicePillars =
     normalized === "ka"
       ? [
-          { icon: Truck, title: "სწრაფი მიწოდება", description: "თბილისში ხელმისაწვდომია ოპერატიული მიტანა, ხოლო რეგიონებში მოკლე ვადიანი მომსახურება." },
+          {
+            icon: Truck,
+            title: "უფასო კურიერი თბილისში",
+            description: "თბილისში საკურიერო მომსახურება უფასოა, შეკვეთის დღესვე ბარდებათ ნივთი და შესაძლებელია კურიერთან გადახდაც."
+          },
           { icon: ShieldCheck, title: "უსაფრთხო შეკვეთა", description: "გამჭვირვალე ფასები, მკაფიო პირობები და დაცული გადახდის პროცესი." },
           { icon: Headphones, title: "შერჩეული ასორტიმენტი", description: "ტექნიკა, აუდიო მოწყობილობები და ყოველდღიური აქსესუარები ერთ სივრცეში." }
         ]
       : [
-          { icon: Truck, title: "Fast delivery", description: "Prompt delivery is available in Tbilisi, with short lead times across the regions." },
+          {
+            icon: Truck,
+            title: "Free courier in Tbilisi",
+            description: "Courier delivery in Tbilisi is free, available on the same day, and payment to the courier is also possible."
+          },
           { icon: ShieldCheck, title: "Secure ordering", description: "Transparent pricing, clear terms, and a protected payment process." },
           { icon: Headphones, title: "Selected assortment", description: "Technology, audio devices, and everyday accessories in one place." }
         ];

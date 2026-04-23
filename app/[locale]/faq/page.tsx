@@ -44,7 +44,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
             },
             {
               question: "რამდენ ხანში ხდება მიწოდება?",
-              answer: "თბილისში მიწოდება ჩვეულებრივ უფრო სწრაფია, ხოლო რეგიონებში დამოკიდებულია მისამართსა და გადამზიდზე."
+              answer:
+                "თბილისში საკურიერო მომსახურება უფასოა და შეკვეთის დღესვე ბარდებათ ნივთი, შესაძლებელია კურიერთან გადახდაც. რეგიონებში გაგზავნის შემთხვევაში ჯერ გადახდა უნდა განხორციელდეს და გადახდის დღესვე იგზავნება ნივთი."
             },
             {
               question: "შემიძლია ინვოისის მიღება?",
@@ -79,7 +80,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
             },
             {
               question: "How long does delivery take?",
-              answer: "Delivery is usually faster in Tbilisi, while regional timing depends on the destination and carrier."
+              answer:
+                "Courier delivery in Tbilisi is free and the item is delivered on the same day. Cash payment to the courier is also available. For regional shipments, payment is required first and the item is dispatched on the same day."
             },
             {
               question: "Can I receive an invoice?",

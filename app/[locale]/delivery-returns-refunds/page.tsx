@@ -51,9 +51,9 @@ export default async function DeliveryReturnsRefundsPage({
             {
               title: "მიწოდების პირობები",
               paragraphs: [
-                "შეკვეთის დადასტურების შემდეგ მიწოდების ვადა დამოკიდებულია პროდუქტის ხელმისაწვდომობაზე, მისამართსა და ლოგისტიკურ ზონაზე.",
-                "თბილისში მიწოდება ჩვეულებრივ სრულდება უფრო სწრაფად, ხოლო რეგიონებში ვადა განისაზღვრება კურიერული მომსახურების პირობებით.",
-                "მიწოდების ზუსტი დრო მომხმარებელთან წინასწარ თანხმდება შეკვეთის დამუშავებისას."
+                "თბილისში საკურიერო მომსახურება უფასოა და შეკვეთის დღესვე ბარდებათ ნივთი.",
+                "თბილისში შესაძლებელია კურიერთან გადახდაც.",
+                "რეგიონებში გაგზავნის შემთხვევაში ჯერ გადახდა უნდა განხორციელდეს და გადახდის დღესვე იგზავნება ნივთი."
               ]
             },
             {
@@ -102,9 +102,9 @@ export default async function DeliveryReturnsRefundsPage({
             {
               title: "Delivery terms",
               paragraphs: [
-                "After order confirmation, delivery timing depends on product availability, destination, and logistics coverage.",
-                "Delivery in Tbilisi is usually completed faster, while regional timing depends on courier service conditions.",
-                "The exact delivery window is agreed with the customer during order processing."
+                "Courier delivery in Tbilisi is free and the item is delivered on the same day.",
+                "Cash payment to the courier is also available in Tbilisi.",
+                "For regional shipments, payment must be completed first and the item is dispatched on the same day."
               ]
             },
             {

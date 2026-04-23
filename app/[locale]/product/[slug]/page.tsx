@@ -64,7 +64,8 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           },
           {
             question: "როგორია მიწოდების პირობები?",
-            answer: "თბილისში ხელმისაწვდომია სწრაფი მიწოდება, ხოლო რეგიონებში შეკვეთები იგზავნება მოკლე ვადაში."
+            answer:
+              "თბილისში საკურიერო მომსახურება უფასოა და შეკვეთის დღესვე ბარდებათ ნივთი, შესაძლებელია კურიერთან გადახდაც. რეგიონებში გაგზავნის შემთხვევაში ჯერ გადახდა უნდა განხორციელდეს და გადახდის დღესვე იგზავნება ნივთი."
           },
           {
             question: "აქვს თუ არა ონლაინ განვადება?",
@@ -80,7 +81,8 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           },
           {
             question: "What are the delivery conditions?",
-            answer: "Fast delivery is available in Tbilisi, with short lead times for regional orders."
+            answer:
+              "Courier delivery in Tbilisi is free and the item is delivered on the same day. Payment to the courier is also available. For regional shipments, payment must be completed first and the item is dispatched on the same day."
           },
           {
             question: "Are online installments available?",
@@ -195,7 +197,9 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 <Truck className="h-5 w-5 text-[#9a6f3a]" />
                 <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "მიწოდება" : "Delivery"}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {normalized === "ka" ? "თბილისში ხელმისაწვდომია სწრაფი მიწოდება, რეგიონებში კი შეკვეთები იგზავნება მოკლე ვადაში." : "Fast delivery is available in Tbilisi, and regional orders are shipped within short lead times."}
+                  {normalized === "ka"
+                    ? "თბილისში საკურიერო მომსახურება უფასოა და შეკვეთის დღესვე ბარდებათ ნივთი. რეგიონებში ჯერ გადახდა უნდა განხორციელდეს და ნივთი გადახდის დღესვე იგზავნება."
+                    : "Courier delivery in Tbilisi is free and available on the same day. For regional shipments, payment is required in advance and the item is dispatched on the same day."}
                 </p>
               </div>
             </div>

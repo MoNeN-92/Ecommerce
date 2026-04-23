@@ -64,7 +64,8 @@ export default async function TermsOfServicePage({
             {
               title: "მიწოდება, გარანტია და დაბრუნება",
               paragraphs: [
-                "მიწოდების ვადები არის საორიენტაციო და შეიძლება შეიცვალოს ლოგისტიკური პირობების მიხედვით. კონკრეტულ პროდუქტებზე მოქმედებს შესაბამისი გარანტიის პირობები.",
+                "თბილისში საკურიერო მომსახურება უფასოა და შეკვეთის დღესვე ბარდებათ ნივთი. თბილისში შესაძლებელია კურიერთან გადახდაც.",
+                "რეგიონებში გაგზავნის შემთხვევაში ჯერ გადახდა უნდა განხორციელდეს და ნივთი გადახდის დღესვე იგზავნება. კონკრეტულ პროდუქტებზე მოქმედებს შესაბამისი გარანტიის პირობები.",
                 "დაბრუნება ან გაცვლა ფასდება პროდუქტის მდგომარეობის, გახსნილი შეფუთვისა და მოქმედი კანონმდებლობის მიხედვით."
               ]
             },
@@ -112,7 +113,8 @@ export default async function TermsOfServicePage({
             {
               title: "Delivery, warranty, and returns",
               paragraphs: [
-                "Delivery estimates are indicative and may change based on logistics conditions. Certain products are covered by their applicable warranty terms.",
+                "Courier delivery in Tbilisi is free and the item is delivered on the same day. Payment to the courier is also available in Tbilisi.",
+                "For regional shipments, payment must be completed first and the item is dispatched on the same day. Certain products are covered by their applicable warranty terms.",
                 "Returns or exchanges are assessed based on product condition, opened packaging, and applicable law."
               ]
             },

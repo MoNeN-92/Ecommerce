@@ -56,8 +56,8 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
           </h3>
           <p className="mt-4 text-sm leading-7 text-slate-300">
             {locale === "ka"
-              ? "სწრაფი მიწოდება, ოფიციალური გარანტია და ადამიანური მხარდაჭერა შეკვეთამდე და შეკვეთის შემდეგ."
-              : "Fast delivery, official warranty, and human support before and after purchase."}
+              ? "თბილისში კურიერი უფასოა და შესაძლებელია კურიერთან გადახდაც. რეგიონებში კი წინასწარი გადახდის შემდეგ ნივთი იმავე დღეს იგზავნება."
+              : "Courier delivery in Tbilisi is free and payment to the courier is available. For regional shipments, the item is dispatched the same day after advance payment."}
           </p>
         </div>
         <div>
