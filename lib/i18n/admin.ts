@@ -16,6 +16,7 @@ const messages = {
       products: "პროდუქტები",
       categories: "კატეგორიები",
       orders: "შეკვეთები",
+      users: "მომხმარებლები",
       storefront: "ვებსაიტზე გადასვლა"
     },
     dashboard: {
@@ -38,6 +39,23 @@ const messages = {
       deleteConfirm: "ნამდვილად გსურთ პროდუქტის წაშლა?",
       deleteFailed: "პროდუქტის წაშლა ვერ მოხერხდა",
       inStock: "მარაგში"
+    },
+    users: {
+      title: "მომხმარებლები",
+      description: "ნახეთ ყველა ანგარიში და შეცვალეთ მათი როლები.",
+      name: "სახელი",
+      email: "ელფოსტა",
+      phone: "ტელეფონი",
+      createdAt: "რეგისტრაცია",
+      role: "როლი",
+      effectiveRole: "აქტიური როლი",
+      save: "შენახვა",
+      saving: "ინახება...",
+      updated: "როლი განახლდა",
+      updateFailed: "როლის შეცვლა ვერ მოხერხდა",
+      superAdmin: "SUPER_ADMIN",
+      admin: "ADMIN",
+      user: "USER"
     },
     orders: {
       title: "შეკვეთები",
@@ -174,6 +192,7 @@ const messages = {
       products: "Products",
       categories: "Categories",
       orders: "Orders",
+      users: "Users",
       storefront: "Go to storefront"
     },
     dashboard: {
@@ -196,6 +215,23 @@ const messages = {
       deleteConfirm: "Are you sure you want to delete this product?",
       deleteFailed: "Failed to delete product",
       inStock: "in stock"
+    },
+    users: {
+      title: "Users",
+      description: "Review all accounts and change their roles.",
+      name: "Name",
+      email: "Email",
+      phone: "Phone",
+      createdAt: "Created",
+      role: "Role",
+      effectiveRole: "Effective role",
+      save: "Save",
+      saving: "Saving...",
+      updated: "Role updated",
+      updateFailed: "Failed to update role",
+      superAdmin: "SUPER_ADMIN",
+      admin: "ADMIN",
+      user: "USER"
     },
     orders: {
       title: "Orders",

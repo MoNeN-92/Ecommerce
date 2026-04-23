@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { getSessionRole, isAdminLike } from "@/lib/auth/roles";
 
 export async function getAuthSession() {
   return getServerSession(authOptions);
@@ -20,7 +21,7 @@ export async function requireSession() {
 export async function requireAdmin() {
   const session = await requireSession();
 
-  if (session.user.role !== "ADMIN") {
+  if (!isAdminLike(getSessionRole(session))) {
     redirect("/auth/sign-in?error=admin");
   }
 
@@ -28,5 +29,19 @@ export async function requireAdmin() {
 }
 
 export function isAdmin(session: Session | null) {
-  return session?.user.role === "ADMIN";
+  return isAdminLike(getSessionRole(session));
+}
+
+export async function requireSuperAdmin() {
+  const session = await requireSession();
+
+  if (getSessionRole(session) !== "SUPER_ADMIN") {
+    redirect("/admin?error=super-admin");
+  }
+
+  return session;
+}
+
+export function isSuperAdmin(session: Session | null) {
+  return getSessionRole(session) === "SUPER_ADMIN";
 }

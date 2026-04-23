@@ -7,9 +7,11 @@ import { SearchBox } from "@/components/layout/search-box";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { AuthLink } from "@/components/layout/auth-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { getSessionRole, isAdminLike } from "@/lib/auth/roles";
 
 export function Header({ locale, session }: { locale: "ka" | "en"; session: Session | null }) {
   const t = getMessages(locale);
+  const canAccessAdmin = isAdminLike(getSessionRole(session));
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/[0.05] bg-[rgba(246,242,235,0.82)] backdrop-blur-xl">
@@ -29,7 +31,7 @@ export function Header({ locale, session }: { locale: "ka" | "en"; session: Sess
             <Link href={`/${locale}/products`} className="transition hover:text-slate-950">{t.nav.products}</Link>
             <Link href={`/${locale}/products?featured=true`} className="transition hover:text-slate-950">{t.nav.deals}</Link>
             <Link href={`/${locale}/account`} className="transition hover:text-slate-950">{t.nav.account}</Link>
-            {session?.user.role === "ADMIN" ? <Link href="/admin" className="transition hover:text-slate-950">{t.nav.admin}</Link> : null}
+            {canAccessAdmin ? <Link href="/admin" className="transition hover:text-slate-950">{t.nav.admin}</Link> : null}
           </nav>
 
           <SearchBox locale={locale} className="ml-2 hidden flex-1 lg:block" />

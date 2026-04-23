@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import type { AppRole } from "@/lib/auth/roles";
 import { getAdminMessages, normalizeAdminLocale, withAdminLang } from "@/lib/i18n/admin";
 
-export function AdminNav() {
+export function AdminNav({ role }: { role: AppRole }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const locale = normalizeAdminLocale(searchParams.get("lang"));
@@ -13,7 +14,8 @@ export function AdminNav() {
     { href: "/admin", label: messages.nav.dashboard },
     { href: "/admin/products", label: messages.nav.products },
     { href: "/admin/categories", label: messages.nav.categories },
-    { href: "/admin/orders", label: messages.nav.orders }
+    { href: "/admin/orders", label: messages.nav.orders },
+    ...(role === "SUPER_ADMIN" ? [{ href: "/admin/users", label: messages.nav.users }] : [])
   ];
 
   return (

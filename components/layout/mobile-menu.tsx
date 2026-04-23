@@ -7,10 +7,12 @@ import type { Session } from "next-auth";
 import { AuthLink } from "@/components/layout/auth-link";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { getMessages } from "@/lib/i18n/messages";
+import { getSessionRole, isAdminLike } from "@/lib/auth/roles";
 
 export function MobileMenu({ locale, session }: { locale: "ka" | "en"; session: Session | null }) {
   const t = getMessages(locale);
   const [open, setOpen] = useState(false);
+  const canAccessAdmin = isAdminLike(getSessionRole(session));
 
   useEffect(() => {
     if (!open) {
@@ -67,7 +69,7 @@ export function MobileMenu({ locale, session }: { locale: "ka" | "en"; session: 
               <Link href={`/${locale}/account`} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-white">
                 {t.nav.account}
               </Link>
-              {session?.user.role === "ADMIN" ? (
+              {canAccessAdmin ? (
                 <Link href="/admin" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-white">
                   {t.nav.admin}
                 </Link>
