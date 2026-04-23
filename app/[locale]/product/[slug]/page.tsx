@@ -97,6 +97,16 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,420px)] xl:items-start">
         <div className="min-w-0 space-y-6">
           <ProductGallery images={product.images} alt={product.name} />
+          <div className="xl:hidden">
+            <div className="rounded-[2rem] border border-black/[0.06] bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6f3a]">
+                {normalized === "ka" ? "სწრაფი შეძენა" : "Quick purchase"}
+              </p>
+              <div className="mt-4">
+                <ProductActions product={product} locale={normalized} />
+              </div>
+            </div>
+          </div>
           <div className="rounded-[2rem] border border-border bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>{product.brand}</Badge>
@@ -203,8 +213,9 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 </p>
               </div>
             </div>
-
-            <ProductActions product={product} locale={normalized} />
+            <div className="hidden xl:block">
+              <ProductActions product={product} locale={normalized} />
+            </div>
             <ProductSharePanel locale={normalized} title={product.name} url={productUrl} />
           </div>
         </aside>
