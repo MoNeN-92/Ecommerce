@@ -3,6 +3,14 @@ import { PrintInvoiceButton } from "@/components/admin/print-invoice-button";
 import { Card } from "@/components/ui/card";
 import { getAdminMessages, normalizeAdminLocale } from "@/lib/i18n/admin";
 import { getAdminOrderById } from "@/lib/services/orders";
+import {
+  COMPANY_IDENTIFIER,
+  COMPANY_NAME,
+  SITE_ADDRESS_EN,
+  SITE_ADDRESS_KA,
+  SITE_EMAIL,
+  SITE_PHONE_DISPLAY
+} from "@/lib/site";
 import { formatCurrency, getLocaleCurrency } from "@/lib/utils";
 
 function paymentLabel(value: string, locale: "ka" | "en") {
@@ -44,8 +52,16 @@ export default async function AdminInvoicePage({
       <Card className="invoice-document space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">TEQ STORE</p>
-            <p className="mt-3 text-sm text-slate-600">electronics store invoice</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">JOKER STORE</p>
+            <div className="mt-3 space-y-1 text-sm text-slate-600">
+              <p>{COMPANY_NAME}</p>
+              <p>
+                {locale === "ka" ? "საიდენტიფიკაციო კოდი" : "Identification code"}: {COMPANY_IDENTIFIER}
+              </p>
+              <p>{locale === "ka" ? SITE_ADDRESS_KA : SITE_ADDRESS_EN}</p>
+              <p>{SITE_EMAIL}</p>
+              <p>{SITE_PHONE_DISPLAY}</p>
+            </div>
           </div>
           <div className="space-y-2 text-sm text-slate-600 md:text-right">
             <p>
