@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Noto_Sans_Georgian, Noto_Serif_Georgian } from "next/font/google";
 import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
+import { GoogleAnalytics } from "@/components/seo/google-analytics";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
   COMPANY_IDENTIFIER,
@@ -36,7 +37,10 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`
   },
   description: SITE_DESCRIPTION_EN,
-  applicationName: SITE_NAME
+  applicationName: SITE_NAME,
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined
+  }
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -44,6 +48,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ka" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontDisplay.variable} bg-background font-sans text-foreground antialiased`}>
         <Providers>
+          <GoogleAnalytics />
           {children}
           <JsonLd
             data={[
