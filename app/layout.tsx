@@ -46,9 +46,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ka" suppressHydrationWarning>
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body className={`${fontSans.variable} ${fontDisplay.variable} bg-background font-sans text-foreground antialiased`}>
         <Providers>
-          <GoogleAnalytics />
           {children}
           <JsonLd
             data={[
