@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
       ? [
           {
             question: "შესაძლებელია ონლაინ ყიდვა?",
-            answer: "დიახ, პროდუქტის შეძენა შესაძლებელია ონლაინ გადახდით პირდაპირ checkout გვერდიდან."
+            answer: "დიახ, პროდუქტის შეძენა შესაძლებელია ონლაინ გადახდით პირდაპირ შეკვეთის გაფორმების გვერდიდან."
           },
           {
             question: "როგორია მიწოდების პირობები?",
@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
       : [
           {
             question: "Can I buy this product online?",
-            answer: "Yes, this product can be ordered online and paid for directly from checkout."
+            answer: "Yes, this product can be ordered online and paid for directly from the checkout page."
           },
           {
             question: "What are the delivery conditions?",
@@ -181,7 +181,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 <CreditCard className="h-5 w-5 text-[#9a6f3a]" />
                 <p className="mt-3 text-sm font-semibold text-slate-950">{normalized === "ka" ? "ონლაინ ყიდვა" : "Buy online"}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {normalized === "ka" ? "ბარათით ონლაინ გადახდა შეკვეთის დასრულების ეტაპზე." : "Complete card payment securely during checkout."}
+                  {normalized === "ka" ? "ბარათით ონლაინ გადახდა შეკვეთის გაფორმებისას." : "Complete card payment securely on the checkout page."}
                 </p>
               </div>
               {product.installmentAvailable ? (

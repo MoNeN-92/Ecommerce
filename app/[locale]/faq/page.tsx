@@ -36,11 +36,11 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
           items: [
             {
               question: "როგორ შევუკვეთო პროდუქტი ონლაინ?",
-              answer: "აირჩიეთ პროდუქტი, დაამატეთ კალათაში და დაასრულეთ შეკვეთა checkout გვერდიდან."
+              answer: "აირჩიეთ პროდუქტი, დაამატეთ კალათაში და დაასრულეთ შეკვეთა შეკვეთის გაფორმების გვერდიდან."
             },
             {
               question: "შესაძლებელია ონლაინ განვადება?",
-              answer: "დიახ, იმ პროდუქტებზე სადაც განვადება ჩართულია, checkout-ზე ჩანს შესაბამისი მოთხოვნის ვარიანტი."
+              answer: "დიახ, იმ პროდუქტებზე, სადაც განვადება ჩართულია, შეკვეთის გაფორმების გვერდზე ჩანს შესაბამისი მოთხოვნის ვარიანტი."
             },
             {
               question: "რამდენ ხანში ხდება მიწოდება?",
@@ -72,11 +72,11 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
           items: [
             {
               question: "How do I order a product online?",
-              answer: "Choose a product, add it to cart, and complete the purchase from checkout."
+              answer: "Choose a product, add it to cart, and complete the purchase from the checkout page."
             },
             {
               question: "Are online installments available?",
-              answer: "Yes, products with installments enabled show the relevant request option at checkout."
+              answer: "Yes, products with installments enabled show the relevant request option on the checkout page."
             },
             {
               question: "How long does delivery take?",
