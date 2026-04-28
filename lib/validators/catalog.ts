@@ -45,7 +45,7 @@ export const productQuerySchema = z.object({
     .optional()
     .transform((value) => value === true || value === "true"),
   page: z.coerce.number().min(1).default(1),
-  pageSize: z.coerce.number().min(1).max(48).default(12)
+  pageSize: z.coerce.number().min(1).max(200).default(100)
 });
 
 export const productSchema = z.object({
