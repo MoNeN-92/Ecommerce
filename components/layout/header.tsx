@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Cpu } from "lucide-react";
 import type { Session } from "next-auth";
 import { getMessages } from "@/lib/i18n/messages";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
@@ -7,6 +6,7 @@ import { SearchBox } from "@/components/layout/search-box";
 import { HeaderActions } from "@/components/layout/header-actions";
 import { AuthLink } from "@/components/layout/auth-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { SiteLogo } from "@/components/shared/site-logo";
 import { getSessionRole, isAdminLike } from "@/lib/auth/roles";
 
 export function Header({ locale, session }: { locale: "ka" | "en"; session: Session | null }) {
@@ -17,14 +17,8 @@ export function Header({ locale, session }: { locale: "ka" | "en"; session: Sess
     <header className="sticky top-0 z-40 border-b border-black/[0.05] bg-[rgba(246,242,235,0.82)] backdrop-blur-xl">
       <div className="container-shell py-3 lg:py-4">
         <div className="flex items-center gap-3">
-          <Link href={`/${locale}`} className="flex min-w-0 shrink items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary text-[var(--primary-foreground)] shadow-[0_14px_34px_rgba(17,24,39,0.14)] sm:h-11 sm:w-11">
-              <Cpu className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate font-display text-base font-semibold tracking-[0.1em] text-slate-950 sm:text-lg sm:tracking-[0.12em]">Joker</p>
-              <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500 sm:text-xs sm:tracking-[0.28em]">Shops</p>
-            </div>
+          <Link href={`/${locale}`} className="flex min-w-0 shrink items-center">
+            <SiteLogo priority className="h-11 w-auto rounded-xl border border-black/[0.08] object-cover shadow-[0_14px_34px_rgba(17,24,39,0.14)] sm:h-12" />
           </Link>
 
           <nav className="hidden items-center gap-6 pl-4 text-sm font-medium text-slate-600 lg:flex">

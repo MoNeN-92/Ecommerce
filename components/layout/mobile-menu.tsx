@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "next-auth";
 import { AuthLink } from "@/components/layout/auth-link";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { SiteLogo } from "@/components/shared/site-logo";
 import { getMessages } from "@/lib/i18n/messages";
 import { getSessionRole, isAdminLike } from "@/lib/auth/roles";
 
@@ -45,10 +46,7 @@ export function MobileMenu({ locale, session }: { locale: "ka" | "en"; session: 
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-4 border-b border-black/[0.06] pb-4">
-              <div>
-                <p className="font-display text-base font-semibold tracking-[0.12em] text-slate-950">TechStore</p>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Georgia</p>
-              </div>
+              <SiteLogo className="h-12 w-auto rounded-xl border border-black/[0.08] object-cover shadow-[0_14px_34px_rgba(17,24,39,0.12)]" />
               <button
                 type="button"
                 aria-label="Close menu"

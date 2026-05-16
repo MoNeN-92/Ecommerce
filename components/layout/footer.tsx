@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteLogo } from "@/components/shared/site-logo";
 import {
   COMPANY_IDENTIFIER,
   COMPANY_NAME,
@@ -14,7 +15,7 @@ export function Footer({ locale }: { locale: "ka" | "en" }) {
     <footer className="mt-24 border-t border-black/[0.06] bg-[#111827] text-white">
       <div className="container-shell grid gap-8 py-12 sm:gap-10 sm:py-16 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.9fr_0.9fr]">
         <div>
-          <p className="font-display text-2xl font-semibold tracking-[0.12em] text-white">{SITE_NAME}</p>
+          <SiteLogo className="h-16 w-auto rounded-2xl border border-white/10 object-cover shadow-[0_18px_40px_rgba(15,23,42,0.28)]" />
           <p className="mt-4 max-w-sm text-sm leading-7 text-slate-300">
             {locale === "ka"
               ? "ტექნიკისა და აქსესუარების ონლაინ მაღაზია უსაფრთხო შეკვეთით, მკაფიო პირობებითა და სწრაფი მიწოდებით."

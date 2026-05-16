@@ -38,6 +38,14 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION_EN,
   applicationName: SITE_NAME,
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/site-logo-mark.png", type: "image/png", sizes: "512x512" }
+    ],
+    apple: [{ url: "/images/site-logo-mark.png", sizes: "512x512", type: "image/png" }],
+    shortcut: ["/favicon.ico"]
+  },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION || undefined
   }
